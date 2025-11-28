@@ -31,7 +31,7 @@ AddEventHandler('entityCreated', function(entity)
             return
         end
     end
-    if Config.preventUnNetworkedEnity then
+    if Config.preventUnNetworkedEntity then
         if not netId or netId == 0 then
             Debug(owner, "Spawned Unnetworked Entity")
             DeleteEntity(entity)
@@ -50,7 +50,7 @@ AddEventHandler('entityCreated', function(entity)
             return
         end
     end
-    if Config.preventNilResources and scriptName == nil then
+    if Config.preventNilResource and scriptName == nil then
         PunishPlayer(owner, true, "Spawned vehicle with an invalid resource (1)",false)
         DeleteEntity(entity)
         return
