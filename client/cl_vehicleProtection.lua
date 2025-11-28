@@ -26,16 +26,16 @@ local function isVehicleValid(vehicle)
     local netId = NetworkGetNetworkIdFromEntity(vehicle)
     local owner = NetworkGetEntityOwner(vehicle)
     local scriptName = GetEntityScript(vehicle)
-    if Config.preventUnNetworkedEnity and (not netId or netId == 0) then
+    if Config.preventUnNetworkedEntity and (not netId or netId == 0) then
         return false, "Vehicle with Invalid net id"
     end
     if Config.preventInvalidOwner and (not owner or owner == -1) then
         return false, "Vehicle with Invalid Owner"
     end
-    if Config.preventUnauthorizedResource.enable and Config.preventNilResource and scriptName == nil then
+    if Config.preventNilResource and scriptName == nil then
         return false, "Vehicle with an invalid resource (2)"
     end
-    if Config.preventUnauthorizedResource.enable and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
+    if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
         return false, "Vehicle from non-whitelisted script: " .. tostring(scriptName) .. " (2)"
     end
     return true
@@ -54,7 +54,6 @@ local function check()
             if not isValid then
                 DeleteEntity(vehicle)
                 TriggerServerEvent("fg:addon:VehicleProtection:punish", reason)
-                ForceSocialClubUpdate()
             else
                 trackedVehicles[vehicle] = true
             end
