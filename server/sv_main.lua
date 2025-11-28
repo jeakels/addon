@@ -76,7 +76,7 @@ game 'gta5'
 
 author 'Offsey & Jeakels discord.gg/fiveguard'
 description 'Addon pack for fiveguard'
-version "1.5.6"
+version "1.5.7"
 lua54 'yes'
 addon 'yes'
 
