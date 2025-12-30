@@ -171,22 +171,20 @@ function PunishPlayer(source, ban, reason, mediaType)
             if success then
                 reason = reason .. " "..tostring(success)
                 Debug(("Player [^4%s^0] ^4%s^0 recorded successfully"):format(source,GetPlayerName(source)))
-                exports[Fiveguard]:fg_BanPlayer(source, reason, true)
             else
                 Warn(("Unable to record the player [^4%s^1] ^4%s^1"):format(source,GetPlayerName(source)))
-                exports[Fiveguard]:fg_BanPlayer(source, reason, true)
             end
+            exports[Fiveguard]:fg_BanPlayer(source, reason, true)
         end, Config.CustomWebhookURL)
     elseif tostring(mediaType) == "image" then
         exports[Fiveguard]:screenshotPlayer(source, function(success)
             if success then
                 reason = reason .. " "..tostring(success)
                 Debug(("Player [^4%s^0] ^4%s^0 screenshotted successfully"):format(source,GetPlayerName(source)))
-                exports[Fiveguard]:fg_BanPlayer(source, reason, true)
             else
                 Warn(("Unable to screenshot the player [^4%s^1] ^4%s^1"):format(source,GetPlayerName(source)))
-                exports[Fiveguard]:fg_BanPlayer(source, reason, true)
             end
+            exports[Fiveguard]:fg_BanPlayer(source, reason, true)
         end, Config.CustomWebhookURL)
     else
         exports[Fiveguard]:fg_BanPlayer(source, reason, true)
