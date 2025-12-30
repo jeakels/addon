@@ -101,7 +101,7 @@ local setAutoBypass = function(se, ee, bp, useBooleanArg)
     else
         if useBooleanArg then
             R_EVENTS[se] = AddEventHandler(se, function(bol)
-                if not bol then return Error(se.. 'don\'t have a boolean argoument! Make sure it\'s configured correctly') end
+                if not bol then return Error(se.. ' don\'t have a boolean argoument! Make sure it\'s configured correctly') end
                 for i = 1, #bp do
                     result, errorText = exports[Fiveguard]:SetTempPermission(source, B_CATEGORY[bp[i]], bp[i], bol)
                     if not result then
