@@ -215,7 +215,7 @@ Citizen.CreateThread(function()
 ^3  A:::::A               A:::::Ad:::::::::::::::::d d:::::::::::::::::d^0o:::::::::::::::o  n::::n    n::::n
 ^3 A:::::A                 A:::::Ad:::::::::ddd::::d  d:::::::::ddd::::d^0 oo:::::::::::oo   n::::n    n::::n
 ^3AAAAAAA                   AAAAAAAddddddddd   ddddd   ddddddddd   ddddd^0   ooooooooooo     nnnnnn    nnnnnn
-version %s                                   By OffSey, Jeakels and contributors. Powered by ^3five^0guard]]):format(GetResourceMetadata(CurrentResourceName, "version", 0)))
+version %s                                        By Jeakels and contributors. Powered by ^3five^0guard]]):format(GetResourceMetadata(CurrentResourceName, "version", 0)))
     local function splitCamelCase(str)
         return (str:gsub("(%l)(%u)", "%1 %2"))
     end
