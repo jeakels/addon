@@ -71,7 +71,7 @@ end
 local CORRECT_FXMANIFEST = [[fx_version 'cerulean'
 game 'gta5'
 
-author 'Offsey & Jeakels discord.gg/fiveguard'
+author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
 version "1.5.7"
 lua54 'yes'
@@ -110,7 +110,8 @@ client_scripts {
 
 file 'bypassNative.lua'
 file 'config.lua'
-file 'xss.lua']]
+file 'xss.lua'
+]]
 
 local function checkAndFixFxmanifest()
     local function simple_hash(s)
