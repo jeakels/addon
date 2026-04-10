@@ -22,59 +22,56 @@ local function checkResourceNames()
 end
 
 local function checkVersion()
-    local function parseVersion(s)
-        if not s then return nil end
-        local maj, min, pat = s:match("(%d+)%.(%d+)%.?(%d*)")
-        if not maj or not min then return nil end
-        if pat == "" then pat = "0" end
-        return tonumber(maj), tonumber(min), tonumber(pat)
+    local resName = GetInvokingResource() or GetCurrentResourceName()
+    local version = GetResourceMetadata(resName, 'version', 0)
+
+    if version then
+        version = version:match("(%d+%.%d+%.%d+)")
+    else
+        Error("Can't read version")
+        return
     end
-    local function tupleCompare(a1, a2, a3, b1, b2, b3)
-        if a1 ~= b1 then return (a1 < b1) and -1 or 1 end
-        if a2 ~= b2 then return (a2 < b2) and -1 or 1 end
-        if a3 ~= b3 then return (a3 < b3) and -1 or 1 end
-        return 0
-    end
-    local resource = GetCurrentResourceName()
-    local currentVersionRaw = GetResourceMetadata(resource, 'version', 0)
-    local cMaj, cMin, cPat = parseVersion(currentVersionRaw)
-    if not cMaj then
-        return Error(("Unable to determine current resource version for '%s' (got '%s')"):format(resource, tostring(currentVersionRaw)))
-    end
-    local currentVersion = ("%d.%d.%d"):format(cMaj, cMin, cPat)
-    PerformHttpRequest('https://raw.githubusercontent.com/OffSey/OffSey_AssetsVersions/master/addon.txt', function(error, result, headers)
-        if error ~= 200 then
-            return Error(('Version check failed, Error: %s'):format(error))
-        end
-        local response = json.decode(result)
-        local latestRaw = response and response.version
-        local lMaj, lMin, lPat = parseVersion(latestRaw)
-        if not lMaj then
-            return Error(("Invalid latest version in response: '%s'"):format(tostring(latestRaw)))
-        end
-        local latestVersion = ("%d.%d.%d"):format(lMaj, lMin, lPat)
-        local cmp = tupleCompare(cMaj, cMin, cPat, lMaj, lMin, lPat)
-        if cmp < 0 then
-            local symbols = '^9' .. string.rep('=', 26 + #'Fiveguard Addon') .. '^0'
-            print(symbols)
-            print(('New update available! ^0\nCurrent Version: ^1%s^0.\nNew Version: ^2%s^0.\nNote of changes:\n^5%s^0.'):format(currentVersion, latestVersion, response.news or '—'))
-            print('Download it now from https://github.com/OffSey/addon/archive/refs/heads/main.zip')
-            print(symbols)
-            return
-        elseif cmp == 0 then
-            Info('You are using the latest version!')
-            return
-        else
-            Warn('You are using a version that is more recent than github!')
-            return
-        end
-    end, 'GET')
+
+    SetTimeout(1500, function()
+        PerformHttpRequest("https://api.github.com/repos/jeakels/addon/releases/latest", function(code, body)
+            if code ~= 200 or not body then return end
+
+            local data = json.decode(body)
+            if not data or data.prerelease then return end
+
+            local latest = data.tag_name and data.tag_name:match("(%d+%.%d+%.%d+)")
+            if not latest or latest == version then return end
+
+            local function splitVersion(v)
+                local t = {}
+                for num in v:gmatch("%d+") do
+                    t[#t+1] = tonumber(num)
+                end
+                return t
+            end
+
+            local currentParts = splitVersion(version)
+            local latestParts = splitVersion(latest)
+
+            for i = 1, math.max(#currentParts, #latestParts) do
+                local c = currentParts[i] or 0
+                local l = latestParts[i] or 0
+
+                if c < l then
+                    Warn(("Update available (%s → %s) %s"):format(version, latest, data.html_url))
+                    return
+                elseif c > l then
+                    return
+                end
+            end
+        end, "GET")
+    end)
 end
 
 local CORRECT_FXMANIFEST = [[fx_version 'cerulean'
 game 'gta5'
 
-author 'Offsey & Jeakels discord.gg/fiveguard'
+author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
 version "1.5.7"
 lua54 'yes'
@@ -113,7 +110,8 @@ client_scripts {
 
 file 'bypassNative.lua'
 file 'config.lua'
-file 'xss.lua']]
+file 'xss.lua'
+]]
 
 local function checkAndFixFxmanifest()
     local function simple_hash(s)
@@ -217,7 +215,7 @@ Citizen.CreateThread(function()
 ^3  A:::::A               A:::::Ad:::::::::::::::::d d:::::::::::::::::d^0o:::::::::::::::o  n::::n    n::::n
 ^3 A:::::A                 A:::::Ad:::::::::ddd::::d  d:::::::::ddd::::d^0 oo:::::::::::oo   n::::n    n::::n
 ^3AAAAAAA                   AAAAAAAddddddddd   ddddd   ddddddddd   ddddd^0   ooooooooooo     nnnnnn    nnnnnn
-version %s                                   By OffSey, Jeakels and contributors. Powered by ^3five^0guard]]):format(GetResourceMetadata(CurrentResourceName, "version", 0)))
+version %s                                        By Jeakels and contributors. Powered by ^3five^0guard]]):format(GetResourceMetadata(CurrentResourceName, "version", 0)))
     local function splitCamelCase(str)
         return (str:gsub("(%l)(%u)", "%1 %2"))
     end

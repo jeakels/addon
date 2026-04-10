@@ -83,7 +83,7 @@ function installInResource(targetResource, currentResource, defModule) {
   if (/\bac\s*['"]fg['"]/.test(manifest)) {
     return { changed: false, skippedReason: "fiveguard resource", ignoreMe: true };
   }
-  if (manifest.includes("author 'Offsey & Jeakels discord.gg/fiveguard'")) {
+  if (manifest.includes("addon 'yes'")) {
     return { changed: false, skippedReason: "addon resource", ignoreMe: true }
   }
   if (manifestHasBypassLine(manifest, currentResource, defModule)) {

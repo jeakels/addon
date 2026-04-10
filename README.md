@@ -15,7 +15,7 @@ This resource extends **Fiveguard** by allowing you to manage permissions, bypas
 * [Credits](#-credits)
 ---
 ## 📥 Installation
-1. [Download](https://github.com/OffSey/addon/releases/latest/download/addon.zip) the script
+1. [Download](https://github.com/jeakels/addon/releases/latest/download/addon.zip) the script
 2. Configure the `config.lua` file as needed
 ---
 ## ⚙️ Main Features
@@ -73,10 +73,6 @@ Manage bans directly with Fiveguard Addon commands:
 * Configurable `RecordTime` (default: 5s)
 ---
 ## 🙌 Credits
-Addon developed by **OffSey** and **Jeakels** with the support of the community and powered by fiveguard, the best anticheat in the market!
+Addon developed by **Jeakels** with the support of the community and powered by fiveguard, the best anticheat in the market!
 * 🌐 [fiveguard.net](https://fiveguard.net)
 * 💬 [Fiveguard Discord](https://discord.gg/fiveguard)
-
-also supported by Elite Store:
-* 🌐 [Elite Tebex](https://elitedevelopment.tebex.io/)
-* 💬 [Elite Discord](https://discord.gg/b8jpP82MqJ)
