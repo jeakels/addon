@@ -73,7 +73,7 @@ game 'gta5'
 
 author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
-version "1.5.7"
+version "1.5.8"
 lua54 'yes'
 addon 'yes'
 
