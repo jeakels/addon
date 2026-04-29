@@ -27,6 +27,7 @@ Supports:
 ---
 ### 🚨 Security Systems
 * **Heartbeat** → prevents client-side stop attempts
+* **Crash Protection** → prevents cheaters from crashing players by blocking specific known exploits
 * **Anti Stopper** → prevents resource stopping exploits
 * **Anti Carry** → blocks carry exploit (safe zones supported)
 * **Anti Ped Manipulation** → prevents ped manipulation

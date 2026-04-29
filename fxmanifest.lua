@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
-version "1.5.7"
+version "1.5.8"
 lua54 'yes'
 addon 'yes'
 
@@ -20,6 +20,7 @@ server_scripts {
     'server/sv_antiStopper.lua',
     'server/sv_backlistModels.lua',
     'server/sv_checkNicknames.lua',
+    'server/sv_crashProtection.lua',
     'server/sv_easyBypass.lua',
     'server/sv_easyPermissions.lua',
     'server/sv_heartbeat.lua',
@@ -30,6 +31,7 @@ server_scripts {
 client_scripts {
     'client/cl_main.lua',
     'client/cl_antiThrow.lua',
+    'client/cl_crashProtection.lua',
     'client/cl_antiPedManipulation.lua',
     'client/cl_antiStopper.lua',
     'client/cl_easyBypass.lua',
