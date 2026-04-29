@@ -7,11 +7,12 @@ return {
     -- prevent cheaters to stop client side of this resource
     Heartbeat = {
         enable = true,
-        timeOut = 60,    -- Timeout (seconds) after which a player is considered missing
+        timeOut = 10,    -- Timeout (seconds) after which a player is considered missing
+        joinGrace = 45,  -- Grace period after joining during which misses are not counted (seconds)
         threadTime = 5,  -- Interval between heartbeats (seconds)
         graceMisses = 3, -- How many consecutive misses are tolerated before punishment
-        jitter = 0.20,   -- Jitter percentage for heartbeat interval
-        ban = false       -- If false player will be kicked
+        tokenExpiry = 10, -- Token expiry time (seconds)
+        ban = false      -- If false player will be kicked
     },
     -- prevent cheaters to crash players
     CrashProtection = {
@@ -29,7 +30,7 @@ return {
     AntiThrow = {
         enable = true,
         ban = true,         -- If false player will be kicked
-        banMedia = "image", -- "video" or "video" or "false"
+        banMedia = "image", -- "image" or "video" or "false"
         whitelistedZones = {
             -- { -- EXAMPLE
             --     coords = vector3(0, 0, 0),
@@ -73,9 +74,10 @@ return {
                 { coords = vec3(-47.500000, -1097.199951, 25.400000), radius = 2.0 }
             },
         },
-        preventLaunchPlayer = false,    -- !!Can make false detections
-        preventInvalidOwner = false,    -- !!Can make false detections
-        preventNilResource = false,    -- !!Can make false detections
+        preventAttachVehicles = false,   -- !!Can make false detections
+        preventLaunchPlayer = false,     -- !!Can make false detections
+        preventInvalidOwner = false,     -- !!Can make false detections
+        preventNilResource = false,      -- !!Can make false detections
         preventUnNetworkedEntity = false,-- !!Can make false detections
         maxVehicleCheckDistance = 50,
         checkInterval = 5,
