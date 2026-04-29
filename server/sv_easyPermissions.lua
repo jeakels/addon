@@ -302,13 +302,13 @@ elseif Config.FrameworkPermissions.enable then
             Error('Framework not detected\nIf u have a custom framework anble customFramework and configure it in the config.lua file.')
         end
     else
-        AddEventHandler(tostring(Config.FrameworkPermissions.customEvent),function(playerId,group,allow)
+        AddEventHandler(tostring(Config.FrameworkPermissions.customFramework.customEvent),function(playerId,group,allow)
             frameworkDetected = GetInvokingResource()
             Debug('[customEvent]', GetInvokingResource())
-            if Config.FrameworkPermissions.invokerResource and Config.FrameworkPermissions.invokerResource:len() > 4 then
-                if GetInvokingResource() ~= Config.FrameworkPermissions.invokerResource then return Warn(source,'tried to exploit '..Config.customEvent) end
+            if Config.FrameworkPermissions.customFramework.invokerResource and Config.FrameworkPermissions.customFramework.invokerResource:len() > 4 then
+                if GetInvokingResource() ~= Config.FrameworkPermissions.customFramework.invokerResource then return Warn(source,'tried to exploit '..Config.FrameworkPermissions.customFramework.customEvent) end
             else
-                Warn('Make sure to config "Config.FrameworkPermissions.invokerResource" for you custom framework, without it the event can be exploitable by cheaters!')
+                Warn('Make sure to config "Config.FrameworkPermissions.customFramework.invokerResource" for you custom framework, without it the event can be exploitable by cheaters!')
             end
             if not (playerId and group and allow) then
                 return Error('[Framework Permission] Bad config for custom framework')
