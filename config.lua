@@ -13,6 +13,18 @@ return {
         jitter = 0.20,   -- Jitter percentage for heartbeat interval
         ban = false       -- If false player will be kicked
     },
+    -- prevent cheaters to crash players
+    CrashProtection = {
+        enable = true,
+        ban = true,         -- If false, the player will only be kicked/blocked
+        banMedia = "image", -- "image", "video" o "false"
+        
+        preventLumia = true,
+        preventPneumaticHammer = true,
+        preventTableGolfSummer = true,
+        preventNewCrashMethod = true,
+        preventFootIK = true
+    },
     -- prevent cheaters to take and launch vehicles
     AntiThrow = {
         enable = true,
@@ -162,7 +174,6 @@ return {
             [GetHashKey('a_c_stingray')] = true,
             [GetHashKey('a_c_westy')] = true
         },
-        preventCrashPlayer = true
     },
     -- Allows players to get a bypass directly by native execution on installed resources or when a event configured is triggered
     EasyBypass = {
