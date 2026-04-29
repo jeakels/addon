@@ -13,7 +13,7 @@ end
 local function isWhitelistedZone(ped)
     local playerCoords = GetEntityCoords(ped)
     for i = 1, #Config.whitelistedZones do
-        if #(playerCoords - zone.coords) < Config.whitelistedZones[i].radius then
+        if #(playerCoords - Config.whitelistedZones[i].coords) < Config.whitelistedZones[i].radius then
             return true
         end
     end
