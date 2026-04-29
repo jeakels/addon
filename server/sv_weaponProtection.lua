@@ -224,12 +224,14 @@ if Config.AntiGiveWeapon.enable then
         RegisterNetEvent('fg:addon:registerInitialWeapons', function(initialWeapons)
             if isRegistered[source] then
                 PunishPlayer(source, true, "Tried to re-register his weapons", "image")
+                return
              end
             if not PlayerWeapons[source] then PlayerWeapons[source] = {} end
             for _, weaponName in ipairs(initialWeapons) do
                 print(string.format("Registered starting weapon '%s' for player %s", weaponName, GetPlayerName(tostring(source))))
                 PlayerWeapons[source][weaponName] = true
             end
+            isRegistered[source] = true
         end)
         exports("giveWeapon", function(targetId, weaponName)
             if not PlayerWeapons[targetId] then PlayerWeapons[targetId] = {} end
@@ -277,6 +279,7 @@ end
 if Config.AntiGiveWeaponToPed.enable then
     AddEventHandler("giveWeaponEvent",function (sender,ddata)
         Debug(json.encode(ddata,{indent=true}))
+        if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) then return end
         PunishPlayer(sender,Config.AntiGiveWeaponToPed.ban,("Tried to Add %s to player %s"):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
         CancelEvent()
     end)
@@ -285,11 +288,13 @@ end
 if Config.AntiRemoveWeaponFromPed.enable then
     AddEventHandler("removeWeaponEvent",function (sender,ddata)
         Debug(json.encode(ddata,{indent=true}))
+        if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) then return end
         PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.ban,("Tried to remove %s from player %s"):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
         CancelEvent()
     end)
     AddEventHandler("removeAllWeaponsEvent",function (sender,ddata)
         Debug(json.encode(ddata,{indent=true}))
+        if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) then return end
         PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.ban,("Tried to remove all weapons from player %s"):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
         CancelEvent()
     end)
