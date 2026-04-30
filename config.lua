@@ -3,23 +3,21 @@ return {
     CheckUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
     -- custom storage for video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
     CustomWebhookURL = "https://discord.com/api/webhooks/URL", -- Discord webhook URL to store video or images
-    RecordTime = 5, -- in seconds
+    RecordTime = 5, -- (seconds)
     -- prevent cheaters to stop client side of this resource
     Heartbeat = {
         enable = true,
-        timeOut = 10,    -- Timeout (seconds) after which a player is considered missing
-        joinGrace = 45,  -- Grace period after joining during which misses are not counted (seconds)
+        timeOut = 30,    -- Timeout (seconds) after which a player is considered missing
         threadTime = 5,  -- Interval between heartbeats (seconds)
         graceMisses = 3, -- How many consecutive misses are tolerated before punishment
-        tokenExpiry = 10, -- Token expiry time (seconds)
+        tokenExpiry = 10,-- Token expiry time (seconds)
         ban = false      -- If false player will be kicked
     },
     -- prevent cheaters to crash players
     CrashProtection = {
         enable = true,
         ban = true,         -- If false, the player will only be kicked/blocked
-        banMedia = "image", -- "image", "video" o "false"
-        
+        banMedia = "image", -- "image", "video" or "false"
         preventLumia = true,
         preventPneumaticHammer = true,
         preventTableGolfSummer = true,
@@ -300,7 +298,7 @@ return {
                         --exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassTeleport", true --[[ or false ]], GetCurrentResourceName()) /
                         --TriggerServerEvent("fg:addon:SetTempPermission:BypassTeleport", true --[[ or false ]], GetCurrentResourceName())
             SetEntityCoords = true,
-            -- It enable  exports["addon"]:SafeSetEntityCoords(playerId, true or false, GetCurrentResourceName())
+            -- It enable  exports["addon"]:SafeSetEntityVisible(playerId, true or false, GetCurrentResourceName())
                         --exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassInvisible", true --[[ or false ]], GetCurrentResourceName()) /
                         --TriggerServerEvent("fg:addon:SetTempPermission:BypassInvisible", true --[[ or false ]], GetCurrentResourceName())
             SetEntityVisible = true,
