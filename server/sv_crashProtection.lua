@@ -1,29 +1,29 @@
 local data = LoadResourceFile(CurrentResourceName, 'config.lua')
-local ConfigCrash = assert(load(data))()?.CrashProtection
-if not ConfigCrash?.enable then return end
+local Config = assert(load(data))()?.CrashProtection
+if not Config?.enable then return end
 while not READY do Citizen.Wait(0) end
 
 -- Crash: Lumia
-if ConfigCrash.preventLumia then
+if Config.preventLumia then
     AddEventHandler('entityCreating', function(entity)
         local src = NetworkGetEntityOwner(entity)
         local modelprop = GetEntityModel(entity)
         if modelprop == 1885233650 or modelprop == 310817095 then
             CancelEvent()
-            PunishPlayer(src, ConfigCrash.ban, "Tried to crash server (Lumia)", ConfigCrash.banMedia)
+            PunishPlayer(src, Config.ban, "Tried to crash server (Lumia)", Config.banMedia)
         end
     end)
 end
 
 -- Crash: New Crash Method (April 2026)
-if ConfigCrash.preventNewCrashMethod then
+if Config.preventNewCrashMethod then
     local _playerPos  = {}
     local _crasher    = {}
     local _lastPrint  = {}
     local WAIT_TIME = 250
     local CRASH_TIME = 15000
 
-    CreateThread(function()
+    Citizen.CreateThread(function()
         while true do
             local now = GetGameTimer()
             local players = GetPlayers()
@@ -44,7 +44,7 @@ if ConfigCrash.preventNewCrashMethod then
                     _playerPos[srcId] = nil
                 end
             end
-            Wait(WAIT_TIME)
+            Citizen.Wait(WAIT_TIME)
         end
     end)
 
@@ -85,7 +85,7 @@ if ConfigCrash.preventNewCrashMethod then
         if bestId then
             if not _lastPrint[bestId] or (now - _lastPrint[bestId]) > 3000 then
                 _lastPrint[bestId] = now
-                PunishPlayer(bestId, ConfigCrash.ban, "Tried to crash server (April 2026 Method)", ConfigCrash.banMedia)
+                PunishPlayer(bestId, Config.ban, "Tried to crash server (April 2026 Method)", Config.banMedia)
             end
         end
         _playerPos[srcId] = nil
@@ -94,14 +94,14 @@ if ConfigCrash.preventNewCrashMethod then
 end
 
 -- Crash: 119626B / 101C (FootIK Handle Jump / Ragdoll Spoof)
-if ConfigCrash.preventFootIK then
+if Config.preventFootIK then
     local VIOLATIONS     = {}
     local MAX_VIOLATIONS = 3
     local lastHandle     = {}
 
     local function flagPlayer(src, reason, detail, instant)
         if instant then
-            PunishPlayer(src, ConfigCrash.ban, "Crash Exploit Detected: " .. reason, ConfigCrash.banMedia)
+            PunishPlayer(src, Config.ban, "Crash Exploit Detected: " .. reason, Config.banMedia)
             VIOLATIONS[src] = nil
             lastHandle[src] = nil
             return
@@ -109,7 +109,7 @@ if ConfigCrash.preventFootIK then
 
         VIOLATIONS[src] = (VIOLATIONS[src] or 0) + 1
         if VIOLATIONS[src] >= MAX_VIOLATIONS then
-            PunishPlayer(src, ConfigCrash.ban, "Crash Exploit Detected: " .. reason, ConfigCrash.banMedia)
+            PunishPlayer(src, Config.ban, "Crash Exploit Detected: " .. reason, Config.banMedia)
             VIOLATIONS[src] = nil
             lastHandle[src] = nil
         end
@@ -120,9 +120,8 @@ if ConfigCrash.preventFootIK then
         lastHandle[source] = nil
     end)
 
-    CreateThread(function()
+    Citizen.CreateThread(function()
         while true do
-            Wait(500)
             for _, src in ipairs(GetPlayers()) do
                 local ped = GetPlayerPed(src)
                 if ped and ped > 0 then
@@ -138,6 +137,7 @@ if ConfigCrash.preventFootIK then
                     end
                 end
             end
+            Citizen.Wait(500)
         end
     end)
 end
