@@ -3,24 +3,6 @@ local Config = assert(load(data))()
 READY = false
 while not Fiveguard do Citizen.Wait(0) end
 
-local function checkResourceNames()
-    local forbiddenPatterns = {
-    "fg",
-    "ac",
-    "anticheat",
-    "fiveguard",
-    "security",
-    "guard",
-    }
-    local resourceName = string.lower(CurrentResourceName)
-    for i = 1, #forbiddenPatterns do
-        local pattern = string.lower(forbiddenPatterns[i])
-        if string.find(resourceName, pattern) then
-            Warn("The resource '" .. resourceName .. "' contains a forbidden pattern: '" .. pattern .. "'. Please change its name.")
-        end
-    end
-end
-
 local function checkVersion()
     local resName = GetInvokingResource() or GetCurrentResourceName()
     local version = GetResourceMetadata(resName, 'version', 0)
@@ -212,32 +194,45 @@ version %s                                        By Jeakels and contributors. P
         out = out .. "\n" .. line
     end
     out = out .. "\n" .. hline() .. "\n"
-    checkResourceNames()
-    if Config.CheckUpdates == true then
-        Citizen.SetTimeout(2000, checkVersion)
-    end
     local attempts = 1
     Debug('Fiveguard is: ^3'..Fiveguard..'^0')
     SetConvar('ac', Fiveguard)
     ::recheckFG::
-    if GetResourceState(Fiveguard) == 'started' then
-        Citizen.Wait(2000)
+    local ok = pcall(function() return exports[Fiveguard].fg_BanPlayer end)
+    if GetResourceState(Fiveguard) == 'started' and ok then
         READY = true
         Info('Fiveguard linked ^2successfully^0!')
         print(out)
-    else
-        StartResource(Fiveguard)
-        Error('Seems like you didn\'t start ^3'..Fiveguard..'^1 before this resource\nMake sure to start ^3'..Fiveguard..'^1 as first resource in your server.cfg for better compatibility with your scripts!')
-        Info('Trying to start ^3'..Fiveguard..'^0 (attempt: '..attempts..')^0')
+        if Config.CheckUpdates == true then
+            Citizen.SetTimeout(2000, checkVersion)
+        end
+    elseif not ok then
+        Error('Seems like Fiveguard (^3'..Fiveguard..'^1) is started but not ready yet.')
+        Info('Checking Fiveguard (^3'..Fiveguard..'^0) again... (attempt: '..attempts..')^0')
+        ExecuteCommand('ensure '..Fiveguard)
         attempts += 1
-        if attempts < 3 then goto recheckFG end
-        Error(('Failed to start ^3%s^1 (attempts: %s)'):format(Fiveguard, attempts))
+        if attempts <= 3 then Citizen.Wait(1500) goto recheckFG end
+        Error('Fiveguard is started but it\'s not working properly, make sure it\'s properly installed with an active subscription!')
+        StopResource(Fiveguard)
         for _, cfg in pairs(Config) do
             if type(cfg) == "table" and cfg.enable then
                 cfg.enable = false
-                READY = false
             end
         end
+        READY = false
+    else
+        Error('You didn\'t start Fiveguard (^3'..Fiveguard..'^1) before this resource\nMake sure to start it as first resource in your server.cfg for better compatibility with your scripts!')
+        Info('Starting Fiveguard (^3'..Fiveguard..'^0) (attempt: '..attempts..')^0')
+        ExecuteCommand('ensure '..Fiveguard)
+        attempts += 1
+        if attempts <= 3 then Citizen.Wait(500) goto recheckFG end
+        Error(('Failed to start Fiveguard (^3%s^1) (attempts: %s)'):format(Fiveguard, attempts))
+        StopResource(Fiveguard)
+        for _, cfg in pairs(Config) do
+            if type(cfg) == "table" and cfg.enable then
+                cfg.enable = false
+            end
+        end
+        READY = false
     end
 end)
-
