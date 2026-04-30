@@ -71,19 +71,17 @@ async function installMode() {
         if (result.changed) {
           changedCount++;
           if (action === "install") {
-            console.log(`Installed ${defModule} to ${resource.name} successfully.`);
+            console.log(`\x1b[32mInstalled ${defModule} to ${resource.name} successfully.\x1b[0m`);
           } else {
-            console.log(`Removed ${defModule} reference from ${resource.name}.`);
+            console.log(`\x1b[32mRemoved ${defModule} reference from ${resource.name}.\x1b[0m`);
           }
         } else {
-          if (!result.ignoreMe) {
             skippedCount++;
-            console.log(`Skipped ${resource.name}. Reason: ${result.skippedReason}.`);
-          }
+            console.log(`\x1b[33mSkipped ${resource.name}. Reason: ${result.skippedReason}.\x1b[0m`);
         }
       } catch (err) {
         failedCount++;
-        console.log(`Failed ${resource.name}. Reason: ${err.message}`);
+        console.log(`\x1b[31mFailed ${resource.name}. Reason: ${err.message}.\x1b[0m`);
       }
     }
     if (action === "install") {
@@ -138,8 +136,7 @@ function installer(resource, currentResource, defModule) {
   if (ignored) {
     return {
       changed: false,
-      skippedReason: ignored,
-      ignoreMe: true
+      skippedReason: ignored
     };
   }
   if (isInstalled(manifest, currentResource, defModule)) {
