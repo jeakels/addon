@@ -68,50 +68,7 @@ local function checkVersion()
     end)
 end
 
-local CORRECT_FXMANIFEST = [[fx_version 'cerulean'
-game 'gta5'
-
-author 'Community of fiveguard.net'
-description 'Addon pack for fiveguard'
-version "1.5.8"
-lua54 'yes'
-addon 'yes'
-
-data_file "DLC_ITYP_REQUEST" "stream/mads_no_exp_pumps.ytyp"
-
-shared_script 'shared.lua'
-
-server_scripts {
-    'server/sv_resourceManager.js',
-    'server/sv_main.lua',
-    'server/sv_antiExplosion.lua',
-    'server/sv_antiThrow.lua',
-    'server/sv_antiPedManipulation.lua',
-    'server/sv_antiStopper.lua',
-    'server/sv_backlistModels.lua',
-    'server/sv_checkNicknames.lua',
-    'server/sv_easyBypass.lua',
-    'server/sv_easyPermissions.lua',
-    'server/sv_heartbeat.lua',
-    'server/sv_vehicleProtection.lua',
-    'server/sv_weaponProtection.lua'
-}
-
-client_scripts {
-    'client/cl_main.lua',
-    'client/cl_antiThrow.lua',
-    'client/cl_antiPedManipulation.lua',
-    'client/cl_antiStopper.lua',
-    'client/cl_easyBypass.lua',
-    'client/cl_heartbeat.lua',
-    'client/cl_vehicleProtection.lua',
-    'client/cl_weaponProtection.lua'
-}
-
-file 'bypassNative.lua'
-file 'config.lua'
-file 'xss.lua'
-]]
+local CORRECT_FXMANIFEST = "fx_version 'cerulean'\ngame 'gta5'\n\nauthor 'Community of fiveguard.net'\ndescription 'Addon pack for fiveguard'\nversion \"1.5.8\"\nlua54 'yes'\naddon 'yes'\n\ndata_file \"DLC_ITYP_REQUEST\" \"stream/mads_no_exp_pumps.ytyp\"\n\nshared_script 'shared.lua'\n\nserver_scripts {\n    'server/sv_resourceManager.js',\n    'server/sv_main.lua',\n    'server/sv_antiExplosion.lua',\n    'server/sv_antiThrow.lua',\n    'server/sv_antiPedManipulation.lua',\n    'server/sv_antiStopper.lua',\n    'server/sv_backlistModels.lua',\n    'server/sv_checkNicknames.lua',\n    'server/sv_crashProtection.lua',\n    'server/sv_easyBypass.lua',\n    'server/sv_easyPermissions.lua',\n    'server/sv_heartbeat.lua',\n    'server/sv_vehicleProtection.lua',\n    'server/sv_weaponProtection.lua'\n}\n\nclient_scripts {\n    'client/cl_main.lua',\n    'client/cl_antiThrow.lua',\n    'client/cl_crashProtection.lua',\n    'client/cl_antiPedManipulation.lua',\n    'client/cl_antiStopper.lua',\n    'client/cl_easyBypass.lua',\n    'client/cl_heartbeat.lua',\n    'client/cl_vehicleProtection.lua',\n    'client/cl_weaponProtection.lua'\n}\n\nfile 'bypassNative.lua'\nfile 'config.lua'\nfile 'xss.lua'\n"
 
 local function checkAndFixFxmanifest()
     local function simple_hash(s)
