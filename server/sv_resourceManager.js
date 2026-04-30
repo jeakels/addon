@@ -111,10 +111,15 @@ function isInstalled(manifest, currentResource, defModule) {
 }
 
 function ignoreResource(manifest) {
-  if (/\bac\s*['"]fg['"]/.test(manifest)) {
+  if (/^\s*author\s+['"]Cfx\.re <root@cfx\.re>['"]/mi.test(manifest)) {
+    return "cfx default resources";
+  }
+
+  if (/^\s*ac\s*['"]fg['"]/mi.test(manifest)) {
     return "fiveguard resource";
   }
-  if (manifest.includes("addon 'yes'") || manifest.includes('addon "yes"')) {
+
+  if (/^\s*addon\s*['"]yes['"]/mi.test(manifest)) {
     return "addon resource";
   }
   return null;
