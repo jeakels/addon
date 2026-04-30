@@ -17,8 +17,3 @@ local function checkModel()
     Citizen.SetTimeout(Config.checkInterval*1000, checkModel)
 end
 checkModel()
-
--- RegisterCommand("checkmodel", function(source, args)
---     local target = tonumber(args[1])
---     if target then checkModel(target) end
--- end, true)
