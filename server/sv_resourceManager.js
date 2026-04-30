@@ -110,7 +110,7 @@ function isInstalled(manifest, currentResource, defModule) {
 
 function ignoreResource(manifest) {
   if (/^\s*author\s+['"]Cfx\.re <root@cfx\.re>['"]/mi.test(manifest)) {
-    return "cfx default resources";
+    return "cfx default resource";
   }
 
   if (/^\s*ac\s*['"]fg['"]/mi.test(manifest)) {
