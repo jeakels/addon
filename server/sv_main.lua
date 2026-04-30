@@ -73,6 +73,10 @@ local CORRECT_FXMANIFEST = "fx_version 'cerulean'\ngame 'gta5'\n\nauthor 'Commun
 local function checkAndFixFxmanifest()
     local function simple_hash(s)
         if not s then return nil end
+        s = s:gsub("^\239\187\191", "")
+        s = s:gsub("\r\n", "\n")
+        s = s:gsub("\r", "\n")
+        s = s:gsub("\n*$", "\n")
         local h1, h2 = 0, 0
         for i = 1, #s do
             local b = s:byte(i)
@@ -81,8 +85,7 @@ local function checkAndFixFxmanifest()
         end
         return string.format("%08x%08x", h1, h2)
     end
-    local fxPath = "fxmanifest.lua"
-    local currentContent = LoadResourceFile(CurrentResourceName, fxPath)
+    local currentContent = LoadResourceFile(CurrentResourceName, 'fxmanifest.lua')
 
     local correctHash = simple_hash(CORRECT_FXMANIFEST)
     local currentHash = simple_hash(currentContent)
@@ -91,7 +94,7 @@ local function checkAndFixFxmanifest()
         Warn("You've modified fxmanifest.lua, overwriting it with the correct version...")
 
         local resPath = GetResourcePath(CurrentResourceName)
-        local fullPath = resPath .. "/" .. fxPath
+        local fullPath = resPath .. "/" .. 'fxmanifest.lua'
 
         local file = io.open(fullPath, "w")
         if file then
