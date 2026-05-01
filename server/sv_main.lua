@@ -14,7 +14,7 @@ local function checkVersion()
         return
     end
 
-    SetTimeout(1500, function()
+    Citizen.SetTimeout(1500, function()
         PerformHttpRequest("https://api.github.com/repos/jeakels/addon/releases/latest", function(code, body)
             if code ~= 200 or not body then return end
 
@@ -98,7 +98,7 @@ function PunishPlayer(source, ban, reason, mediaType)
     Debug("PunishPlayer",source, ban, reason, mediaType)
     if not ban then
         print(("Player kicked [^4%s^0] ^4%s^0 for %s"):format(source,GetPlayerName(source),reason))
-        DropPlayer(source,"[FIVEGUARD.NET] You have been kicked")
+        DropPlayer(source,"[FIVEGUARD.NET] You have been kicked.")
         return
     end
     if tostring(mediaType) == "video" then
@@ -198,36 +198,35 @@ version %s                                        By Jeakels and contributors. P
     Debug('Fiveguard is: ^3'..Fiveguard..'^0')
     SetConvar('ac', Fiveguard)
     ::recheckFG::
-    local ok = pcall(function() return exports[Fiveguard].fg_BanPlayer end)
-    if GetResourceState(Fiveguard) == 'started' and ok then
-        READY = true
-        Info('Fiveguard linked ^2successfully^0!')
-        print(out)
-        if Config.CheckUpdates == true then
-            Citizen.SetTimeout(2000, checkVersion)
-        end
-    elseif not ok then
-        Error('Seems like Fiveguard (^3'..Fiveguard..'^1) is started but not ready yet.')
-        Info('Checking Fiveguard (^3'..Fiveguard..'^0) again... (attempt: '..attempts..')^0')
-        ExecuteCommand('ensure '..Fiveguard)
-        attempts += 1
-        if attempts <= 3 then Citizen.Wait(1500) goto recheckFG end
-        Error('Fiveguard is started but it\'s not working properly, make sure it\'s properly installed with an active subscription!')
-        StopResource(Fiveguard)
-        for _, cfg in pairs(Config) do
-            if type(cfg) == "table" and cfg.enable then
-                cfg.enable = false
+    Citizen.Wait(1000*attempts)
+    if GetResourceState(Fiveguard) == 'started' then
+        local ok = pcall(function() return exports[Fiveguard].fg_BanPlayer end)
+        if ok then
+            Info('Fiveguard linked ^2successfully^0!')
+            print(out)
+            if Config.CheckUpdates == true then
+                Citizen.SetTimeout(2000, checkVersion)
             end
+            READY = true
+        else
+            Warn('Seems like Fiveguard (^3'..Fiveguard..'^0) is started but not ready yet, checking again... (attempt: '..attempts..')^0')
+            attempts += 1
+            if attempts <= 5 then goto recheckFG end
+            Error('Fiveguard is started but it\'s not working properly, make sure it\'s properly installed with an active subscription!')
+            for _, cfg in pairs(Config) do
+                if type(cfg) == "table" and cfg.enable then
+                    cfg.enable = false
+                end
+            end
+            READY = false
         end
-        READY = false
     else
-        Error('You didn\'t start Fiveguard (^3'..Fiveguard..'^1) before this resource\nMake sure to start it as first resource in your server.cfg for better compatibility with your scripts!')
-        Info('Starting Fiveguard (^3'..Fiveguard..'^0) (attempt: '..attempts..')^0')
+        Warn('You didn\'t start Fiveguard (^3'..Fiveguard..'^0) before this resource\nMake sure to start it as first resource in your server.cfg for better compatibility with your scripts!')
+        Info('Starting Fiveguard (^3'..Fiveguard..'^0)... (attempt: '..attempts..')^0')
         ExecuteCommand('ensure '..Fiveguard)
         attempts += 1
-        if attempts <= 3 then Citizen.Wait(500) goto recheckFG end
+        if attempts <= 5 then goto recheckFG end
         Error(('Failed to start Fiveguard (^3%s^1) (attempts: %s)'):format(Fiveguard, attempts))
-        StopResource(Fiveguard)
         for _, cfg in pairs(Config) do
             if type(cfg) == "table" and cfg.enable then
                 cfg.enable = false
