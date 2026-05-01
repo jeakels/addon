@@ -19,8 +19,8 @@ AddEventHandler('entityCreated', function(entity)
     end
     if Config.cleanNotOwnedVehicles then
         if not firstOwner or firstOwner == -1 then
-            Debug(("Vehicle without owner deleted (entity: %s)"):format(entity))
             DeleteEntity(entity)
+            Debug(("Vehicle without owner deleted (entity: %s)"):format(entity))
             return
         end
     end
@@ -28,6 +28,7 @@ AddEventHandler('entityCreated', function(entity)
         if attached ~= 0 and IsPedAPlayer(attached) then
             PunishPlayer(firstOwner,Config.ban, 'Tried to attach a vehicle to a player', "image")
             DeleteEntity(entity)
+            Debug(("Deleted attached vehicle (entity: %s)"):format(entity))
             return
         end
     end
@@ -35,6 +36,7 @@ AddEventHandler('entityCreated', function(entity)
         if not netId or netId == 0 then
             Debug(owner, "Spawned Unnetworked Entity")
             DeleteEntity(entity)
+            Debug(("Deleted unnetworked vehicle (entity: %s)"):format(entity))
             return
         end
     end
@@ -45,19 +47,22 @@ AddEventHandler('entityCreated', function(entity)
             [1728666326] = true,  -- Large vehicle exploit
         }
         if modelsToDelete[model] then
-            PunishPlayer(owner, true, "Tried to launch a player with "..tostring(model),"image")
             DeleteEntity(entity)
+            Debug(("Deleted launch vehicle (entity: %s)"):format(entity))
+            PunishPlayer(owner, true, "Tried to launch a player with "..tostring(model),"image")
             return
         end
     end
     if Config.preventNilResource and scriptName == nil then
-        PunishPlayer(owner, true, "Spawned vehicle with an invalid resource (1)",false)
         DeleteEntity(entity)
+        Debug(("Deleted vehicle with nil resource (entity: %s)"):format(entity))
+        PunishPlayer(owner, true, "Spawned vehicle with an invalid resource (1)",false)
         return
     end
     if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
-        PunishPlayer(owner, true, "Spawned vehicle from non-whitelisted script: " .. tostring(scriptName) .. " (1)","image")
         DeleteEntity(entity)
+        Debug(("Deleted vehicle from non-whitelisted script: %s (entity: %s)"):format(tostring(scriptName), entity))
+        PunishPlayer(owner, true, "Spawned vehicle from non-whitelisted script: " .. tostring(scriptName) .. " (1)","image")
         return
     end
 end)
