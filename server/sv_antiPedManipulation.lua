@@ -20,6 +20,7 @@ AddEventHandler('entityCreated', function(entity)
         return
     end
     lastDetection = currentTime
-    PunishPlayer(owner, Config.ban, ("Tried To Spawn a %s (%s)"):format(et == 1 and "Ped" or "Vehicle", GetEntityModel(entity)), "image")
     DeleteEntity(entity)
+    Debug("[AntiPedManipulation] Deleted entity", entity)
+    PunishPlayer(owner, Config.ban, ("Tried To Spawn a %s (%s)"):format(et == 1 and "Ped" or "Vehicle", GetEntityModel(entity)), "image")
 end)
