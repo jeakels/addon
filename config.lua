@@ -7,7 +7,7 @@ return {
     -- prevent cheaters to stop client side of this resource
     Heartbeat = {
         enable = true,
-        timeOut = 30,    -- Timeout (seconds) after which a player is considered missing
+        joinGrace = 30,  -- Seconds ignored after the player spawned
         threadTime = 5,  -- Interval between heartbeats (seconds)
         graceMisses = 3, -- How many consecutive misses are tolerated before punishment
         tokenExpiry = 10,-- Token expiry time (seconds)
@@ -295,15 +295,13 @@ return {
         -- it will use the module bypassNative to detect autmatically if a script need to set a player invisible or teleport him
         wrapNatives = {
             -- It enable  exports["addon"]:SafeSetEntityCoords(playerId, true or false, GetCurrentResourceName())
-                        --exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassTeleport", true --[[ or false ]], GetCurrentResourceName()) /
                         --TriggerServerEvent("fg:addon:SetTempPermission:BypassTeleport", true --[[ or false ]], GetCurrentResourceName())
             SetEntityCoords = true,
             -- It enable  exports["addon"]:SafeSetEntityVisible(playerId, true or false, GetCurrentResourceName())
-                        --exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassInvisible", true --[[ or false ]], GetCurrentResourceName()) /
                         --TriggerServerEvent("fg:addon:SetTempPermission:BypassInvisible", true --[[ or false ]], GetCurrentResourceName())
             SetEntityVisible = true,
-                        -- It enable exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassVehicleFixAndGodMode", true --[[ or false ]], GetCurrentResourceName()) /
-                                  -- TriggerServerEvent("fg:addon:SetTempPermission:BypassVehicleFixAndGodMode", true --[[ or false ]], GetCurrentResourceName())
+            -- It enable  exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassVehicleFixAndGodMode", true --[[ or false ]], GetCurrentResourceName()) /
+                        -- TriggerServerEvent("fg:addon:SetTempPermission:BypassVehicleFixAndGodMode", true --[[ or false ]], GetCurrentResourceName())
             SetVehicleFixed = true
         }
     },
