@@ -53,6 +53,7 @@ local function check()
 
             if not isValid then
                 DeleteEntity(vehicle)
+                Debug(("[VehicleProtection] Deleted vehicle %s for reason: %s"):format(vehicle, reason))
                 TriggerServerEvent("fg:addon:VehicleProtection:punish", reason)
             else
                 trackedVehicles[vehicle] = true
@@ -85,6 +86,7 @@ if Config.preventSafeSpawn.enable then
                     Debug('[AntiSafeSpawn] inWhitelistZone',inWhitelistZone)
                     if not inWhitelistZone then
                         DeleteEntity(veh)
+                        Debug('[AntiSafeSpawn] Deleted vehicle', veh)
                     end
                 end
             end
