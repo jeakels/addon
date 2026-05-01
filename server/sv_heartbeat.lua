@@ -3,95 +3,69 @@ local Config = assert(load(data))()?.Heartbeat
 if not Config?.enable then return end
 while not READY do Citizen.Wait(0) end
 
-local state = {}
+local sessions = {}
 
 math.randomseed(GetGameTimer())
 local function newToken(src)
     return ("%d:%d:%d"):format(src, GetGameTimer(), math.random(100000, 999999))
 end
 
-local function ensurePlayer(src)
-    if not state[src] then
-        Debug("Registering player "..src.." for heartbeat")
-        state[src] = {
-            expected = nil,
-            ready = false,
-            issuedAt = 0,
-            lastSeen = 0,
-            misses = 0
-        }
-    end
-    return state[src]
-end
+local function start(src)
+    if sessions[src] then return end
 
-AddEventHandler("playerJoining", function()
-    ensurePlayer(source)
-end)
+    Debug("Registering player "..src.." for heartbeat")
+    sessions[src] = {
+        spawnedAt = nil,
+        seenPong = false,
+        token = nil,
+        pending = nil,
+        misses = 0
+    }
 
-AddEventHandler("playerDropped", function()
-    state[source] = nil
-end)
+    Citizen.CreateThread(function()
+        local st = sessions[src]
 
-RegisterNetEvent("fg:addon:heartbeat:pong", function(token)
-    Debug("Received pong from "..source.." with token "..token)
-    local src = source
-    local st = ensurePlayer(src)
+        while sessions[src] == st and GetPlayerName(src) ~= nil do
+            local ped = GetPlayerPed(src)
+            if not ped or ped == 0 then
+                Citizen.Wait(1000)
+            else
+                st.spawnedAt = st.spawnedAt or GetGameTimer()
 
-    if not st.expected or st.expected ~= token then
-        st.expected = nil
-        st.issuedAt = 0
-        return
-    end
+                local token = newToken(src)
+                local pending = promise.new()
 
-    local minExpiry = Config.threadTime + 1
-    local maxAge = math.max(Config.tokenExpiry, minExpiry) * 1000
-    if (GetGameTimer() - st.issuedAt) > maxAge then
-        st.expected = nil
-        st.issuedAt = 0
-        return
-    end
+                st.token = token
+                st.pending = pending
 
-    st.expected = nil
-    st.issuedAt = 0
-    st.lastSeen = GetGameTimer()
-    st.misses = 0
-end)
-
-CreateThread(function()
-    while true do
-        local cycleStart = GetGameTimer()
-        local players = GetPlayers()
-
-        for _, id in ipairs(players) do
-            local src = tonumber(id)
-            local st = ensurePlayer(src)
-
-            local token = newToken(src)
-            st.expected = token
-            st.issuedAt = GetGameTimer()
-            st.ready = GetPlayerPed(src) ~= 0
-            Debug(("%s heartbeat to %s with token %s"):format(st.ready and "Issuing" or "Skipping", src, token))
-            if st.ready then
-                ---@diagnostic disable-next-line: param-type-mismatch
                 TriggerClientEvent("fg:addon:heartbeat:ping", src, token)
                 Debug("Sent ping to "..src.." with token "..token)
-            end
-        end
 
-        Citizen.Wait(Config.threadTime * 1000)
-
-        local now = GetGameTimer()
-        for _, id in ipairs(players) do
-            local src = tonumber(id)
-            local st = state[src]
-
-            if st then
-                if st.ready then
-                    Debug(("Checking heartbeat for %s: expected=%s, lastSeen=%s, misses=%s"):format(src, st.expected, st.lastSeen, st.misses))
-
-                    if (now - st.lastSeen) > Config.timeOut*1000 then
-                        st.misses = st.misses + 1
+                Citizen.SetTimeout(Config.tokenExpiry * 1000, function()
+                    if sessions[src] == st and st.pending == pending then
+                        st.pending = nil
+                        st.token = nil
+                        pending:resolve(false)
                     end
+                end)
+
+                local ok = Citizen.Await(pending)
+
+                if sessions[src] ~= st then
+                    break
+                end
+
+                st.pending = nil
+                st.token = nil
+
+                local graceExpired = st.seenPong or (GetGameTimer() - st.spawnedAt) >= (Config.joinGrace * 1000)
+
+                if ok then
+                    st.seenPong = true
+                    st.misses = 0
+                elseif graceExpired then
+                    st.misses = st.misses + 1
+                    Debug(("Heartbeat miss for %s (%d/%d)"):format(src, st.misses, Config.graceMisses))
 
                     if st.misses >= Config.graceMisses then
                         PunishPlayer(
@@ -100,15 +74,50 @@ CreateThread(function()
                             ("Heartbeat failed (%d misses)"):format(st.misses),
                             false
                         )
+                        break
                     end
                 end
+                Citizen.Wait((Config.threadTime * 1000) + math.random(0, 1500))
             end
         end
+        sessions[src] = nil
+    end)
+end
 
-        local elapsed = GetGameTimer() - cycleStart
-        local cycleTime = Config.threadTime * 1000
-        local sleep = cycleTime - elapsed
+AddEventHandler("playerDropped", function()
+    local src = source
+    local st = sessions[src]
+    sessions[src] = nil
+    if st and st.pending then
+        local pending = st.pending
+        st.pending = nil
+        st.token = nil
+        pending:resolve(false)
+    end
+end)
 
-        Citizen.Wait(sleep > 0 and sleep or 0)
+RegisterNetEvent("fg:addon:heartbeat:pong", function(token)
+    local src = source
+    local st = sessions[src]
+
+    if not st or not st.pending then return end
+    if st.token ~= token then
+        Debug("Invalid heartbeat token from "..src)
+        return
+    end
+
+    Debug("Received valid heartbeat pong from "..src)
+    local pending = st.pending
+    st.pending = nil
+    st.token = nil
+    pending:resolve(true)
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        for _, id in ipairs(GetPlayers()) do
+            start(tonumber(id))
+        end
+        Citizen.Wait(2000)
     end
 end)
