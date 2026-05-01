@@ -8,6 +8,7 @@ local function check()
     for playerId, state in pairs(playerStates) do
         if not state then
             PunishPlayer(playerId, Config.ban, "Stopped Fiveguard", false)
+            playerStates[playerId] = nil
         end
     end
     Citizen.SetTimeout(Config.checkInterval * 1000, check)
@@ -15,6 +16,5 @@ end
 check()
 
 RegisterNetEvent("fg:addon:resourceState", function(isResourceActive)
-    -- Debug(('[AntiStopper] Fiveguard state received from %s with status %s'):format(source,isResourceActive))
     playerStates[source] = isResourceActive
 end)
