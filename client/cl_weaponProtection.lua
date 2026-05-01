@@ -12,7 +12,7 @@ local WeaponsToCheck = {
     "WEAPON_SNIPERRIFLE", "WEAPON_HEAVYSNIPER"
 }
 
-AddEventHandler('playerSpawned', function()
+AddEventHandler('fg:addon:playerReady', function()
     if hasInitialWeaponsBeenChecked then return end
     hasInitialWeaponsBeenChecked = true
     Citizen.Wait(1000)
