@@ -93,8 +93,7 @@ if Config.AcePermissions.enable then
         end
     end)
 
-    RegisterNetEvent('fg:addon:playerSpawned', function()
-        Debug('[fg:addon:playerSpawned]', source)
+    RegisterNetEvent('fg:addon:playerReady', function()
         for group, _ in pairs(Config.AcePermissions.groups) do
             if IsPlayerAceAllowed(source, 'has.'..group) then
                 SetPermission(source, group, true)
@@ -104,7 +103,6 @@ if Config.AcePermissions.enable then
     end)
 
     AddEventHandler('playerDropped', function()
-        Debug('[playerDropped]', source)
         for group,_ in pairs(Config.AcePermissions.groups) do
             if IsPlayerAceAllowed(source, 'has.'..group) then
                 SetPermission(source, group, false)
