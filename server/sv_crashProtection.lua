@@ -29,6 +29,7 @@ if Config.preventNewCrashMethod then
             local players = GetPlayers()
             for i = 1, #players do
                 local srcId = tonumber(players[i])
+                if not srcId then goto continue end
                 local ped = GetPlayerPed(srcId)
                 if ped ~= 0 and DoesEntityExist(ped) then
                     local coords = GetEntityCoords(ped)
@@ -43,6 +44,7 @@ if Config.preventNewCrashMethod then
                 else
                     _playerPos[srcId] = nil
                 end
+                ::continue::
             end
             Citizen.Wait(WAIT_TIME)
         end
@@ -95,28 +97,8 @@ end
 
 -- Crash: 119626B / 101C (FootIK Handle Jump / Ragdoll Spoof)
 if Config.preventFootIK then
-    local VIOLATIONS     = {}
-    local MAX_VIOLATIONS = 3
-    local lastHandle     = {}
-
-    local function flagPlayer(src, reason, detail, instant)
-        if instant then
-            PunishPlayer(src, Config.ban, "Crash Exploit Detected: " .. reason, Config.banMedia)
-            VIOLATIONS[src] = nil
-            lastHandle[src] = nil
-            return
-        end
-
-        VIOLATIONS[src] = (VIOLATIONS[src] or 0) + 1
-        if VIOLATIONS[src] >= MAX_VIOLATIONS then
-            PunishPlayer(src, Config.ban, "Crash Exploit Detected: " .. reason, Config.banMedia)
-            VIOLATIONS[src] = nil
-            lastHandle[src] = nil
-        end
-    end
-
+    local lastHandle = {}
     AddEventHandler("playerDropped", function()
-        VIOLATIONS[source] = nil
         lastHandle[source] = nil
     end)
 
@@ -126,13 +108,13 @@ if Config.preventFootIK then
                 local ped = GetPlayerPed(src)
                 if ped and ped > 0 then
                     if lastHandle[src] and math.abs(ped - lastHandle[src]) > 50000 then
-                        flagPlayer(src, "FootIK_HandleJump", ("Handle: %d → %d"):format(lastHandle[src], ped), true)
+                        PunishPlayer(src, Config.ban, "Crash Exploit Detected: FootIK_HandleJump " .. ("Handle: %d → %d"):format(lastHandle[src], ped), Config.banMedia)
                     end
                     lastHandle[src] = ped
-
-                    if IsPedRagdoll(ped) or IsEntityDead(ped) then
+                    -- if IsPedRagdoll(ped) or IsEntityDead(ped) then -- IsEntityDead is client-side only
+                    if IsPedRagdoll(ped) or GetEntityHealth(ped) == 0 then
                         if NetworkGetEntityOwner(ped) ~= tonumber(src) then
-                            flagPlayer(src, "FootIK_RagdollSpoof", ("Owner: %d | Src: %s"):format(NetworkGetEntityOwner(ped), src), true)
+                            PunishPlayer(src, Config.ban, "Crash Exploit Detected: FootIK_RagdollSpoof " .. ("Owner: %d | Src: %s"):format(NetworkGetEntityOwner(ped), src), Config.banMedia)
                         end
                     end
                 end
