@@ -3,11 +3,11 @@ game 'gta5'
 
 author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
-version "1.5.8"
+version '1.5.9'
 lua54 'yes'
 addon 'yes'
 
-data_file "DLC_ITYP_REQUEST" "stream/mads_no_exp_pumps.ytyp"
+data_file 'DLC_ITYP_REQUEST' 'stream/mads_no_exp_pumps.ytyp'
 
 shared_script 'shared.lua'
 
