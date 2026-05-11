@@ -7,6 +7,6 @@ Citizen.CreateThread(function()
     Citizen.Wait(3000)
     TriggerEvent('fg:addon:playerReady')
     TriggerServerEvent('fg:addon:playerReady')
-    Debug("Player is ready")
+    Debug('Player is ready')
 end)
 READY = true

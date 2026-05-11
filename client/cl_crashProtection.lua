@@ -8,7 +8,7 @@ if Config.preventPneumaticHammer then
     Citizen.CreateThread(function()
         while true do
             Citizen.Wait(500)
-            local objects = GetGamePool("CObject")
+            local objects = GetGamePool('CObject')
             for _, obj in ipairs(objects) do
                 if DoesEntityExist(obj) then
                     local modelHash = GetEntityModel(obj)

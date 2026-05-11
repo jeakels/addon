@@ -9,12 +9,12 @@ function Debug(...)
         if IsDuplicityVersion() then
             print('[^5DEBUG^0]',...)
         else
-            TriggerServerEvent("fg:addon:debug", ...)
+            TriggerServerEvent('fg:addon:debug', ...)
         end
     end
 end
 if Config.Debug and not d_registered then
-    RegisterNetEvent("fg:addon:debug", function(...)
+    RegisterNetEvent('fg:addon:debug', function(...)
         print('[^5DEBUG-CLIENT^0]', source, ...)
     end)
     d_registered = true
@@ -41,10 +41,10 @@ Citizen.CreateThread(function()
         for i = 0, resources - 1 do
             local resource = GetResourceByFindIndex(i)
             Resources[resource] = true
-            local files = GetNumResourceMetadata(resource, "ac")
+            local files = GetNumResourceMetadata(resource, 'ac')
             for j = 0, files - 1 do
-                local x = GetResourceMetadata(resource, "ac", j)
-                if x:find("fg") then
+                local x = GetResourceMetadata(resource, 'ac', j)
+                if x:find('fg') then
                     found = resource
                 end
             end
@@ -57,7 +57,7 @@ Citizen.CreateThread(function()
     if found then
         pros:resolve(found)
     else
-        pros:reject("Fiveguard not found! Get it on https://discord.gg/gpXNsFe2PE (Fiveguard Italy)")
+        pros:reject('Fiveguard not found! Get it on https://discord.gg/gpXNsFe2PE (Fiveguard Italy)')
     end
 end)
 

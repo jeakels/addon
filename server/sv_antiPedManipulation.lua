@@ -14,13 +14,13 @@ AddEventHandler('entityCreated', function(entity)
     local et = GetEntityType(entity)
     if et ~= 2 and et ~= 1 then return end
     local owner = NetworkGetEntityOwner(entity)
-    if not owner or owner == 0 or owner == -1 or owner == "" then return end
+    if not owner or owner == 0 or owner == -1 or owner == '' then return end
     local currentTime = os.time()
     if currentTime - lastDetection < 15 then
         return
     end
     lastDetection = currentTime
     DeleteEntity(entity)
-    Debug("[AntiPedManipulation] Deleted entity", entity)
-    PunishPlayer(owner, Config.ban, ("Tried To Spawn a %s (%s)"):format(et == 1 and "Ped" or "Vehicle", GetEntityModel(entity)), "image")
+    Debug('[AntiPedManipulation] Deleted entity', entity)
+    PunishPlayer(owner, Config.ban, ('Tried To Spawn a %s (%s)'):format(et == 1 and 'Ped' or 'Vehicle', GetEntityModel(entity)), 'image')
 end)

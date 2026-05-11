@@ -7,7 +7,7 @@ local playerStates = {}
 local function check()
     for playerId, state in pairs(playerStates) do
         if not state then
-            PunishPlayer(playerId, Config.ban, "Stopped Fiveguard", false)
+            PunishPlayer(playerId, Config.ban, 'Stopped Fiveguard', false)
             playerStates[playerId] = nil
         end
     end
@@ -15,6 +15,6 @@ local function check()
 end
 check()
 
-RegisterNetEvent("fg:addon:resourceState", function(isResourceActive)
+RegisterNetEvent('fg:addon:resourceState', function(isResourceActive)
     playerStates[source] = isResourceActive
 end)

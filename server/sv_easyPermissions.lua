@@ -8,7 +8,7 @@ if Config.txAdminPermissions.enable or Config.AcePermissions.enable or Config.Fr
     if (IsPrincipalAceAllowed('resource.'..CurrentResourceName,'command.add_ace')) then
         Debug(('The resource ^5%s^0 have permission to manage ACE permissions, good!'):format(CurrentResourceName))
     else
-        Error(("%s does not have permission to manage ace permission!\nAdd ^3add_ace resource.%s command allow^1 in your server.cfg"):format(CurrentResourceName,CurrentResourceName))
+        Error(('%s does not have permission to manage ace permission!\nAdd ^3add_ace resource.%s command allow^1 in your server.cfg'):format(CurrentResourceName,CurrentResourceName))
         return
     end
     if (Config.txAdminPermissions.enable and Config.AcePermissions.enable) or (Config.AcePermissions.enable and Config.FrameworkPermissions.enable) or (Config.txAdminPermissions.enable and Config.FrameworkPermissions.enable) then
@@ -22,41 +22,41 @@ if Config.txAdminPermissions.enable or Config.AcePermissions.enable or Config.Fr
     ---@param enable boolean
     function SetPermission(source, group, enable)
         Debug('[SetPermission]', source, group, enable, PermsTable[source]?.group)
-        if not group or type(group) ~= "string" then return Error('Group not valid or not exist') end
-        if group == 'user' then return Debug(("Ignored player: [^5%s^0] ^5%s^0 since he's: ^5%s^0"):format(source, GetPlayerName(source), group)) end
+        if not group or type(group) ~= 'string' then return Error('Group not valid or not exist') end
+        if group == 'user' then return Debug(('Ignored player: [^5%s^0] ^5%s^0 since he\'s: ^5%s^0'):format(source, GetPlayerName(source), group)) end
         if source ~= 0 then
             if enable then
                 if PermsTable[source] and PermsTable[source]?.group ~= group then
                     local oldGroup = PermsTable[source]?.group
-                    ExecuteCommand(("remove_principal player.%s fg.%s"):format(source, oldGroup))
+                    ExecuteCommand(('remove_principal player.%s fg.%s'):format(source, oldGroup))
                     PermsTable[source] = nil
-                    ExecuteCommand(("add_principal player.%s fg.%s"):format(source, group))
+                    ExecuteCommand(('add_principal player.%s fg.%s'):format(source, group))
                     PermsTable[source] = { group = group }
                     exports[Fiveguard]:RefreshPlayerPermissions(source)
-                    return Info(("Permissions for player: [^5%s^0] ^5%s^0 was registered with the group ^5%s^0, overriding permissions to ^5%s^0"):format(source, GetPlayerName(source), oldGroup, group))
+                    return Info(('Permissions for player: [^5%s^0] ^5%s^0 was registered with the group ^5%s^0, overriding permissions to ^5%s^0'):format(source, GetPlayerName(source), oldGroup, group))
                 elseif PermsTable[source] and PermsTable[source]?.group == group then
-                    return Warn(("Player: [^5%s^0] ^5%s^0 already have ^5%s^0 group permissions, ignored"):format(source, GetPlayerName(source), group))
+                    return Warn(('Player: [^5%s^0] ^5%s^0 already have ^5%s^0 group permissions, ignored'):format(source, GetPlayerName(source), group))
                 else
-                    ExecuteCommand(("add_principal player.%s fg.%s"):format(source, group))
+                    ExecuteCommand(('add_principal player.%s fg.%s'):format(source, group))
                     PermsTable[source] = { group = group }
                     exports[Fiveguard]:RefreshPlayerPermissions(source)
-                    return Info(("Permissions ^2granted^0 to player: [^5%s^0] ^5%s^0 Group: ^5%s^0"):format(source, GetPlayerName(source), group))
+                    return Info(('Permissions ^2granted^0 to player: [^5%s^0] ^5%s^0 Group: ^5%s^0'):format(source, GetPlayerName(source), group))
                 end
             else
-                ExecuteCommand(("remove_principal player.%s fg.%s"):format(source, group))
+                ExecuteCommand(('remove_principal player.%s fg.%s'):format(source, group))
                 PermsTable[source] = nil
                 exports[Fiveguard]:RefreshPlayerPermissions(source)
-                return Debug(("Permissions ^1removed^0 from player: [^5%s^0] ^5%s^0 Group: ^5%s^0"):format(source, GetPlayerName(source), group))
+                return Debug(('Permissions ^1removed^0 from player: [^5%s^0] ^5%s^0 Group: ^5%s^0'):format(source, GetPlayerName(source), group))
             end
         else
-            return Error(("Invalid player: [^5%s^0] ^5%s^0"):format(source, GetPlayerName(source)))
+            return Error(('Invalid player: [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source)))
         end
     end
     AddEventHandler('onResourceStop', function(res)
         if CurrentResourceName ~= res then return end
         for source, v in pairs(PermsTable) do
             if PermsTable[source]?.group then
-                ExecuteCommand(("remove_principal player.%s fg.%s"):format(source, v.group))
+                ExecuteCommand(('remove_principal player.%s fg.%s'):format(source, v.group))
                 PermsTable[source] = nil
             end
         end
@@ -69,17 +69,17 @@ end
 if Config.AcePermissions.enable then
     Info('Easy Permissions: using ACE')
     for group, groupConfig in pairs(Config.AcePermissions.groups) do
-        local principal = ("group.%s"):format(group)
+        local principal = ('group.%s'):format(group)
         local object    = ('has.'..group)
         for i = 1 , #groupConfig do
             if IsPrincipalAceAllowed(('fg.%s'):format(group),groupConfig[i]) then
                 Warn(('[ACE Permission] Ignored permission %s for group %s because is already registered'):format(groupConfig[i],group))
             else
-                ExecuteCommand(("add_ace fg.%s %s allow"):format(group, groupConfig[i]))
+                ExecuteCommand(('add_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
         end
         if not IsPrincipalAceAllowed(principal, object) then
-            ExecuteCommand(("add_ace %s %s allow"):format(principal, object))
+            ExecuteCommand(('add_ace %s %s allow'):format(principal, object))
         end
     end
 
@@ -115,7 +115,7 @@ if Config.AcePermissions.enable then
         if CurrentResourceName ~= res then return end
         for group, groupConfig in pairs(Config.AcePermissions.groups) do
             for i = 1 , #groupConfig do
-                ExecuteCommand(("remove_ace fg.%s %s allow"):format(group, groupConfig[i]))
+                ExecuteCommand(('remove_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
         end
     end)
@@ -124,16 +124,16 @@ elseif Config.FrameworkPermissions.enable then
     for group, groupConfig in pairs(Config.FrameworkPermissions.groups) do
         for i = 1 , #groupConfig do
             if IsPrincipalAceAllowed(('fg.%s'):format(group),groupConfig[i]) then
-                out = out..'\n\tIgnored permission "'..groupConfig[i]..'" for group "'..group..'". Already Registered!'
+                out = out..'\n\tIgnored permission \''..groupConfig[i]..'\' for group \''..group..'\'. Already Registered!'
             else
-                ExecuteCommand(("add_ace fg.%s %s allow"):format(group, groupConfig[i]))
+                ExecuteCommand(('add_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
         end
     end
     if string.len(out) > 10 then Error(out) end
     local checkResource = function (res)
         local rs = GetResourceState(res)
-        return rs == "started" or rs == "starting"
+        return rs == 'started' or rs == 'starting'
     end
     local frameworkDetected = ''
     if not Config.FrameworkPermissions.customFramework.enable then
@@ -153,7 +153,7 @@ elseif Config.FrameworkPermissions.enable then
                 local fgGroup = xPlayer.getGroup()
                 SetPermission(playerId, fgGroup, false)
             end)
-            AddEventHandler("esx:setGroup",function(playerId, group, lastGroup)
+            AddEventHandler('esx:setGroup',function(playerId, group, lastGroup)
                 Debug('[esx:setGroup]',GetInvokingResource(),playerId, group, lastGroup)
                 if GetInvokingResource() ~= 'es_extended' then return Warn(source,'tried to exploit esx:setGroup') end
                 SetPermission(playerId, lastGroup, false)
@@ -244,11 +244,11 @@ elseif Config.FrameworkPermissions.enable then
             if chunk then
                 load(chunk)()
                 ---@diagnostic disable-next-line: deprecated
-                local Proxy = module("vrp", "lib/Proxy")
+                local Proxy = module('vrp', 'lib/Proxy')
                 ---@diagnostic disable-next-line: undefined-field, need-check-nil
-                vRP = Proxy.getInterface("vRP")
+                vRP = Proxy.getInterface('vRP')
             end
-            AddEventHandler("vRP:playerJoin",function(user_id, playerId, name, tmpdata)
+            AddEventHandler('vRP:playerJoin',function(user_id, playerId, name, tmpdata)
                 Debug('[vRP:playerJoin]',GetInvokingResource(),user_id, playerId, name, tmpdata)
                 if GetInvokingResource() ~= 'vrp' then return Warn(source,'tried to exploit vRP:playerJoin') end
                 for group, _ in pairs(Config.FrameworkPermissions.groups) do
@@ -259,7 +259,7 @@ elseif Config.FrameworkPermissions.enable then
                     end
                 end
             end)
-            AddEventHandler("vRP:playerJoinGroup", function(user_id, group, gtype)
+            AddEventHandler('vRP:playerJoinGroup', function(user_id, group, gtype)
                 Debug('[vRP:playerJoinGroup]',GetInvokingResource(),user_id, group, gtype)
                 if GetInvokingResource() ~= 'vrp' then return Warn(source,'tried to exploit vRP:playerJoinGroup') end
                 for group, _ in pairs(Config.FrameworkPermissions.groups) do
@@ -272,7 +272,7 @@ elseif Config.FrameworkPermissions.enable then
                     end
                 end
             end)
-            AddEventHandler("vRP:playerLeaveGroup", function(user_id, group, gtype)
+            AddEventHandler('vRP:playerLeaveGroup', function(user_id, group, gtype)
                 Debug('[vRP:playerLeaveGroup]',GetInvokingResource(),user_id, group, gtype)
                 if GetInvokingResource() ~= 'vrp' then return Warn(source,'tried to exploit vRP:playerLeaveGroup') end
                 for group, _ in pairs(Config.FrameworkPermissions.groups) do
@@ -285,7 +285,7 @@ elseif Config.FrameworkPermissions.enable then
                     end
                 end
             end)
-            AddEventHandler("vRP:playerLeave", function(user_id, playerId)
+            AddEventHandler('vRP:playerLeave', function(user_id, playerId)
                 Debug('[vRP:playerLeave]',GetInvokingResource(),user_id, playerId)
                 if GetInvokingResource() ~= 'vrp' then return Warn(source,'tried to exploit vRP:playerLeave') end
                 for group, _ in pairs(Config.FrameworkPermissions.groups) do
@@ -306,7 +306,7 @@ elseif Config.FrameworkPermissions.enable then
             if Config.FrameworkPermissions.customFramework.invokerResource and Config.FrameworkPermissions.customFramework.invokerResource:len() > 4 then
                 if GetInvokingResource() ~= Config.FrameworkPermissions.customFramework.invokerResource then return Warn(source,'tried to exploit '..Config.FrameworkPermissions.customFramework.customEvent) end
             else
-                Warn('Make sure to config "Config.FrameworkPermissions.customFramework.invokerResource" for you custom framework, without it the event can be exploitable by cheaters!')
+                Warn('Make sure to config \'Config.FrameworkPermissions.customFramework.invokerResource\' for you custom framework, without it the event can be exploitable by cheaters!')
             end
             if not (playerId and group and allow) then
                 return Error('[Framework Permission] Bad config for custom framework')
@@ -320,7 +320,7 @@ elseif Config.FrameworkPermissions.enable then
         if (CurrentResourceName ~= res) then return end
         for group, groupConfig in pairs(Config.FrameworkPermissions.groups) do
             for i = 1 , #groupConfig do
-                ExecuteCommand(("remove_ace fg.%s %s allow"):format(group, groupConfig[i]))
+                ExecuteCommand(('remove_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
         end
         if frameworkDetected == 'QBCore' then
@@ -331,7 +331,7 @@ elseif Config.FrameworkPermissions.enable then
         if  (res ~= frameworkDetected) then return end
         for group, groupConfig in pairs(Config.FrameworkPermissions.groups) do
             for i = 1 , #groupConfig do
-                ExecuteCommand(("remove_ace fg.%s %s allow"):format(group, groupConfig[i]))
+                ExecuteCommand(('remove_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
         end
         if frameworkDetected == 'QBCore' then
@@ -345,10 +345,10 @@ elseif Config.txAdminPermissions.enable then
         if IsPrincipalAceAllowed('fg.txadmin', Config.txAdminPermissions.fgPermissions[i]) then
             Warn(('[txAdmin Permissions] Ignored permission %s for group fg.txadmin because is already registered'):format(Config.fgPermissions[i]))
         else
-            ExecuteCommand(("add_ace fg.txadmin %s allow"):format(Config.txAdminPermissions.fgPermissions[i]))
+            ExecuteCommand(('add_ace fg.txadmin %s allow'):format(Config.txAdminPermissions.fgPermissions[i]))
         end
     end
-    AddEventHandler("txAdmin:events:adminAuth", function(data)
+    AddEventHandler('txAdmin:events:adminAuth', function(data)
         Debug('[txAdmin:events:adminAuth]', json.encode(data, {indent=true}))
         if not data then return end
         if data.netid >= 1 then
@@ -364,13 +364,13 @@ elseif Config.txAdminPermissions.enable then
     AddEventHandler('onResourceStop', function(res)
         if res ~= CurrentResourceName then return end
         for i = 1, #Config.txAdminPermissions.fgPermissions do
-            ExecuteCommand(("remove_ace fg.txadmin %s allow"):format(Config.txAdminPermissions.fgPermissions[i]))
+            ExecuteCommand(('remove_ace fg.txadmin %s allow'):format(Config.txAdminPermissions.fgPermissions[i]))
         end
     end)
     AddEventHandler('onResourceStop', function(res)
         if res ~= 'monitor' then return end
         for i = 1, #Config.txAdminPermissions.fgPermissions do
-            ExecuteCommand(("remove_ace fg.txadmin %s allow"):format(Config.txAdminPermissions.fgPermissions[i]))
+            ExecuteCommand(('remove_ace fg.txadmin %s allow'):format(Config.txAdminPermissions.fgPermissions[i]))
         end
     end)
 end
