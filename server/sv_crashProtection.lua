@@ -10,7 +10,7 @@ if Config.preventLumia then
         local modelprop = GetEntityModel(entity)
         if modelprop == 1885233650 or modelprop == 310817095 then
             CancelEvent()
-            PunishPlayer(src, Config.ban, "Tried to crash server (Lumia)", Config.banMedia)
+            PunishPlayer(src, Config.ban, 'Tried to crash server (Lumia)', Config.banMedia)
         end
     end)
 end
@@ -50,13 +50,13 @@ if Config.preventNewCrashMethod then
         end
     end)
 
-    AddEventHandler("playerDropped", function(reason)
+    AddEventHandler('playerDropped', function(reason)
         local srcId = source
         local victimCoords = _playerPos[srcId]
         local isCrash = reason and (
-            reason:find("east%-november%-coffee", 1, false) or
-            reason:find("1048F4A", 1, true) or
-            reason:find("Exiting because of a fault", 1, true)
+            reason:find('east%-november%-coffee', 1, false) or
+            reason:find('1048F4A', 1, true) or
+            reason:find('Exiting because of a fault', 1, true)
         )
 
         if not isCrash or not victimCoords then
@@ -87,39 +87,71 @@ if Config.preventNewCrashMethod then
         if bestId then
             if not _lastPrint[bestId] or (now - _lastPrint[bestId]) > 3000 then
                 _lastPrint[bestId] = now
-                PunishPlayer(bestId, Config.ban, "Tried to crash server (April 2026 Method)", Config.banMedia)
+                PunishPlayer(bestId, Config.ban, 'Tried to crash server (April 2026 Method)', Config.banMedia)
             end
         end
         _playerPos[srcId] = nil
         _crasher[srcId]   = nil
     end)
 end
-
 -- Crash: 119626B / 101C (FootIK Handle Jump / Ragdoll Spoof)
 if Config.preventFootIK then
     local lastHandle = {}
-    AddEventHandler("playerDropped", function()
+    AddEventHandler('playerDropped', function()
         lastHandle[source] = nil
     end)
 
     Citizen.CreateThread(function()
         while true do
+            Wait(500)
             for _, src in ipairs(GetPlayers()) do
                 local ped = GetPlayerPed(src)
                 if ped and ped > 0 then
                     if lastHandle[src] and math.abs(ped - lastHandle[src]) > 50000 then
-                        PunishPlayer(src, Config.ban, "Crash Exploit Detected: FootIK_HandleJump " .. ("Handle: %d → %d"):format(lastHandle[src], ped), Config.banMedia)
+                        PunishPlayer(src, Config.ban, 'Crash Exploit Detected: FootIK_HandleJump ' .. ('Handle: %d → %d'):format(lastHandle[src], ped), Config.banMedia)
                     end
                     lastHandle[src] = ped
-                    -- if IsPedRagdoll(ped) or IsEntityDead(ped) then -- IsEntityDead is client-side only
                     if IsPedRagdoll(ped) or GetEntityHealth(ped) == 0 then
                         if NetworkGetEntityOwner(ped) ~= tonumber(src) then
-                            PunishPlayer(src, Config.ban, "Crash Exploit Detected: FootIK_RagdollSpoof " .. ("Owner: %d | Src: %s"):format(NetworkGetEntityOwner(ped), src), Config.banMedia)
+                            PunishPlayer(src, Config.ban, 'Crash Exploit Detected: FootIK_RagdollSpoof ' .. ('Owner: %d | Src: %s'):format(NetworkGetEntityOwner(ped), src), Config.banMedia)
                         end
                     end
                 end
             end
-            Citizen.Wait(500)
+        end
+    end)
+end
+
+-- Crash from South Menu May 2026
+if Config.preventSouthMenu then
+    AddEventHandler("entityCreating", function(entity)
+        if GetEntityType(entity) ~= 2 then return end
+
+        local owner = NetworkGetEntityOwner(entity)
+        if not owner or owner <= 0 then return end
+
+        local coords = GetEntityCoords(entity)
+        if coords and (coords.x ~= coords.x or math.abs(coords.x) > 15000) then
+            CancelEvent()
+            print('[FIVEGUARD] Blocked corrupted coords from src:' .. owner)
+            return
+        end
+
+        Wait(100)
+        if DoesEntityExist(entity) then
+            local driver = GetPedInVehicleSeat(entity, -1)
+            if driver ~= 0 and DoesEntityExist(driver) then
+                local driverOwner = NetworkGetEntityOwner(driver)
+                if driverOwner and driverOwner ~= owner then
+                    local driverPlayerPed = GetPlayerPed(driverOwner)
+                    local vehicleOwnerPed = GetPlayerPed(owner)
+                    if driver ~= driverPlayerPed and driver ~= vehicleOwnerPed then
+                        CancelEvent()
+                        print('[FIVEGUARD] Blocked corrupted driver from src:' .. owner)
+                        return
+                    end
+                end
+            end
         end
     end)
 end
