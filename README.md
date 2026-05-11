@@ -17,6 +17,7 @@ This resource extends **Fiveguard** by allowing you to manage permissions, bypas
 ## 📥 Installation
 1. [Download](https://github.com/jeakels/addon/releases/latest/download/addon.zip) the script
 2. Configure the `config.lua` file as needed
+3. Check the [documentation](https://gabjeksuper.gitbook.io/fiveguard-configuration/addon/package-addon) for further information and help if needed
 ---
 ## ⚙️ Main Features
 ### 🔒 Permissions Management
@@ -54,8 +55,8 @@ Preconfigured for:
 * **qb-police**
 ---
 ### 🧰 Natives with integrated bypass
-* `exports["addon"]:SafeSetEntityCoords` → replaces `SetEntityCoords`
-* `exports["addon"]:SafeSetEntityVisible` → replaces `SetEntityVisible`
+* `exports['addon']:SafeSetEntityCoords` → replaces `SetEntityCoords`
+* `exports['addon']:SafeSetEntityVisible` → replaces `SetEntityVisible`
 or using the commands:
 * `fga help` → shows available commands
 * `fga bypass-native [install/uninstall] [resourceName]`
