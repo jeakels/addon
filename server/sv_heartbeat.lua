@@ -2,94 +2,122 @@ local data = LoadResourceFile(CurrentResourceName, 'config.lua')
 local Config = assert(load(data))()?.Heartbeat
 if not Config?.enable then return end
 while not READY do Citizen.Wait(0) end
-local hbState = {}
 
+local sessions = {}
+
+math.randomseed(GetGameTimer())
 local function newToken(src)
-    return ("%d:%d:%d"):format(src, GetGameTimer(), math.random(100000, 999999))
+    return ('%d:%d:%d'):format(src, GetGameTimer(), math.random(100000, 999999))
 end
 
-local function intervalWithJitter()
-    local jitter = (math.random() * 2 - 1) * (Config.jitter)
-    return math.floor((Config.threadTime * 1000) * (1 + jitter))
+local function start(src)
+    if sessions[src] then return end
+
+    Debug('Registering player '..src..' for heartbeat')
+    sessions[src] = {
+        spawnedAt = nil,
+        seenPong = false,
+        token = nil,
+        pending = nil,
+        misses = 0
+    }
+
+    Citizen.CreateThread(function()
+        local st = sessions[src]
+
+        while sessions[src] == st and DoesPlayerExist(src) do
+            local ped = GetPlayerPed(src)
+            if not ped or ped == 0 then
+                Citizen.Wait(1000)
+            else
+                st.spawnedAt = st.spawnedAt or GetGameTimer()
+
+                local token = newToken(src)
+                local pending = promise.new()
+
+                st.token = token
+                st.pending = pending
+
+                TriggerClientEvent('fg:addon:heartbeat:ping', src, token)
+                Debug('Sent ping to '..src..' with token '..token)
+
+                Citizen.SetTimeout(Config.tokenExpiry * 1000, function()
+                    if sessions[src] == st and st.pending == pending then
+                        st.pending = nil
+                        st.token = nil
+                        pending:resolve(false)
+                    end
+                end)
+
+                local ok = Citizen.Await(pending)
+
+                if sessions[src] ~= st then
+                    break
+                end
+
+                st.pending = nil
+                st.token = nil
+
+                local graceExpired = st.seenPong or (GetGameTimer() - st.spawnedAt) >= (Config.joinGrace * 1000)
+
+                if ok then
+                    st.seenPong = true
+                    st.misses = 0
+                elseif graceExpired then
+                    st.misses = st.misses + 1
+                    Debug(('Heartbeat miss for %s (%d/%d)'):format(src, st.misses, Config.graceMisses))
+
+                    if st.misses >= Config.graceMisses then
+                        PunishPlayer(
+                            src,
+                            Config.ban,
+                            ('Heartbeat failed (%d misses)'):format(st.misses),
+                            false
+                        )
+                        break
+                    end
+                end
+                Citizen.Wait((Config.threadTime * 1000) + math.random(0, 1500))
+            end
+        end
+        sessions[src] = nil
+    end)
 end
 
-CreateThread(function()
-    Citizen.Wait(1000)
-    for _, id in ipairs(GetPlayers()) do
-        local src = tonumber(id)
-        ---@diagnostic disable-next-line: need-check-nil
-        hbState[src] = { clientReady = false, lastSeen = GetGameTimer(), expected = nil, misses = 0, lastFast = 0, lastSlow = 0 }
+AddEventHandler('playerDropped', function()
+    local src = source
+    local st = sessions[src]
+    sessions[src] = nil
+    if st and st.pending then
+        local pending = st.pending
+        st.pending = nil
+        st.token = nil
+        pending:resolve(false)
     end
 end)
 
-AddEventHandler("playerJoining", function()
-    hbState[source] = { clientReady = false, lastSeen = GetGameTimer(), expected = nil, misses = 0, lastFast = 0, lastSlow = 0 }
-end)
+RegisterNetEvent('fg:addon:heartbeat:pong', function(token)
+    local src = source
+    local st = sessions[src]
 
-AddEventHandler("playerDropped", function()
-    hbState[source] = nil
-end)
-
-RegisterNetEvent("fg:addon:heartbeat:pong", function(token, clientFast, clientSlow)
-    Debug(("heartbeat received! source: %s token: %s clientFast: %s clientSlow: %s"):format(source, token, clientFast, clientSlow))
-    local st = hbState[source]
-    if not st then return end
-    if not st.clientReady then
-        st.clientReady = true
-    end
-    if not (token and token == st.expected) then
-        st.misses = math.min(st.misses + 1, Config.graceMisses)
+    if not st or not st.pending then return end
+    if st.token ~= token then
+        Debug('Invalid heartbeat token from '..src)
         return
     end
 
-    local okFast = type(clientFast) == "number" and clientFast > st.lastFast
-    local okSlow = type(clientSlow) == "number" and clientSlow > st.lastSlow
-
-    if okFast and okSlow then
-        st.lastSeen = GetGameTimer()
-        st.lastFast = clientFast
-        st.lastSlow = clientSlow
-        st.misses = 0
-        st.expected = nil
-    else
-        st.misses += 1
-        st.expected = nil
-    end
+    Debug('Received valid heartbeat pong from '..src)
+    local pending = st.pending
+    st.pending = nil
+    st.token = nil
+    pending:resolve(true)
 end)
 
-CreateThread(function()
+Citizen.CreateThread(function()
     while true do
-        local cycleStart = GetGameTimer()
         for _, id in ipairs(GetPlayers()) do
-            local src = tonumber(id)
-            ---@diagnostic disable-next-line: need-check-nil
-            hbState[src] = hbState[src] or { clientReady = false, lastSeen = GetGameTimer(), expected = nil, misses = 0, lastFast = 0, lastSlow = 0 }
-            local t = newToken(src)
-            hbState[src].expected = t
-            ---@diagnostic disable-next-line: param-type-mismatch
-            TriggerClientEvent("fg:addon:heartbeat:ping", src, t)
-            Debug(("heartbeat sent to %s with token %s"):format(src,t))
+            start(tonumber(id))
         end
-
-        Citizen.Wait(math.floor((Config.threadTime * 1000) / 2))
-
-        local now = GetGameTimer()
-        for _, id in ipairs(GetPlayers()) do
-            local src = tonumber(id)
-            local st = hbState[src]
-            if st and st.clientReady then
-                    if now - st.lastSeen > (Config.timeOut * 1000) then
-                    st.misses += 1
-                end
-                if st.misses >= (Config.graceMisses) then
-                    PunishPlayer(src, Config.ban, "Heartbeat not received (misses: "..tostring(st.misses)..")", false)
-                end
-            end
-        end
-
-        local spent = GetGameTimer() - cycleStart
-        local sleep = intervalWithJitter() - spent
-        if sleep < 0 then sleep = 0 end
-        Citizen.Wait(sleep)
+        Citizen.Wait(2000)
     end
 end)

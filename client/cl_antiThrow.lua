@@ -13,7 +13,7 @@ end
 local function isWhitelistedZone(ped)
     local playerCoords = GetEntityCoords(ped)
     for i = 1, #Config.whitelistedZones do
-        if #(playerCoords - zone.coords) < Config.whitelistedZones[i].radius then
+        if #(playerCoords - Config.whitelistedZones[i].coords) < Config.whitelistedZones[i].radius then
             return true
         end
     end
@@ -23,7 +23,7 @@ end
 local function check()
     local playerPed = PlayerPedId()
     if isPlayingBlacklistedAnim(playerPed) and not isWhitelistedZone(playerPed) then
-        TriggerServerEvent("fg:addon:antiThrow:punish")
+        TriggerServerEvent('fg:addon:antiThrow:punish')
     end
     Citizen.SetTimeout(200, check)
 end

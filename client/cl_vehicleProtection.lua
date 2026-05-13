@@ -27,16 +27,16 @@ local function isVehicleValid(vehicle)
     local owner = NetworkGetEntityOwner(vehicle)
     local scriptName = GetEntityScript(vehicle)
     if Config.preventUnNetworkedEntity and (not netId or netId == 0) then
-        return false, "Vehicle with Invalid net id"
+        return false, 'Vehicle with Invalid net id'
     end
     if Config.preventInvalidOwner and (not owner or owner == -1) then
-        return false, "Vehicle with Invalid Owner"
+        return false, 'Vehicle with Invalid Owner'
     end
     if Config.preventNilResource and scriptName == nil then
-        return false, "Vehicle with an invalid resource (2)"
+        return false, 'Vehicle with an invalid resource (2)'
     end
     if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
-        return false, "Vehicle from non-whitelisted script: " .. tostring(scriptName) .. " (2)"
+        return false, 'Vehicle from non-whitelisted script: ' .. tostring(scriptName) .. ' (2)'
     end
     return true
 end
@@ -53,7 +53,8 @@ local function check()
 
             if not isValid then
                 DeleteEntity(vehicle)
-                TriggerServerEvent("fg:addon:VehicleProtection:punish", reason)
+                Debug(('[VehicleProtection] Deleted vehicle %s for reason: %s'):format(vehicle, reason))
+                TriggerServerEvent('fg:addon:VehicleProtection:punish', reason)
             else
                 trackedVehicles[vehicle] = true
             end
@@ -85,6 +86,7 @@ if Config.preventSafeSpawn.enable then
                     Debug('[AntiSafeSpawn] inWhitelistZone',inWhitelistZone)
                     if not inWhitelistZone then
                         DeleteEntity(veh)
+                        Debug('[AntiSafeSpawn] Deleted vehicle', veh)
                     end
                 end
             end

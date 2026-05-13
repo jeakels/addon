@@ -11,12 +11,12 @@ local function checkThrow ()
             pedToSrc[ped] = src
         end
     end
-    for _, veh in ipairs(GetGamePool("CVehicle")) do
+    for _, veh in ipairs(GetGamePool('CVehicle')) do
         if DoesEntityExist(veh) then
             local attachedTo = GetEntityAttachedTo(veh)
             local src = pedToSrc[attachedTo]
             if src and GetPedInVehicleSeat(veh, -1) ~= attachedTo then
-                PunishPlayer(src, Config.ban, "Tried to throw a vehicle (2)", Config.banMedia)
+                PunishPlayer(src, Config.ban, 'Tried to throw a vehicle (2)', Config.banMedia)
             end
         end
     end
@@ -25,5 +25,5 @@ end
 checkThrow()
 
 RegisterNetEvent('fg:addon:antiThrow:punish', function()
-    PunishPlayer(source, Config.ban, "Tried to throw a vehicle (1)",Config.banMedia)
+    PunishPlayer(source, Config.ban, 'Tried to throw a vehicle (1)',Config.banMedia)
 end)

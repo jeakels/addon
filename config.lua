@@ -2,34 +2,34 @@ return {
     Debug = false,
     CheckUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
     -- custom storage for video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
-    CustomWebhookURL = "https://discord.com/api/webhooks/URL", -- Discord webhook URL to store video or images
-    RecordTime = 5, -- in seconds
+    CustomWebhookURL = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images
+    RecordTime = 5, -- (seconds)
     -- prevent cheaters to stop client side of this resource
     Heartbeat = {
         enable = true,
-        timeOut = 60,    -- Timeout (seconds) after which a player is considered missing
+        joinGrace = 30,  -- Seconds ignored after the player spawned
         threadTime = 5,  -- Interval between heartbeats (seconds)
         graceMisses = 3, -- How many consecutive misses are tolerated before punishment
-        jitter = 0.20,   -- Jitter percentage for heartbeat interval
-        ban = false       -- If false player will be kicked
+        tokenExpiry = 10,-- Token expiry time (seconds)
+        ban = false      -- If false player will be kicked
     },
     -- prevent cheaters to crash players
     CrashProtection = {
         enable = true,
         ban = true,         -- If false, the player will only be kicked/blocked
-        banMedia = "image", -- "image", "video" o "false"
-        
+        banMedia = 'image', -- 'image', 'video' or 'false'
         preventLumia = true,
         preventPneumaticHammer = true,
         preventTableGolfSummer = true,
         preventNewCrashMethod = true,
-        preventFootIK = true
+        preventFootIK = true,
+        preventSouthMenu = true
     },
     -- prevent cheaters to take and launch vehicles
     AntiThrow = {
         enable = true,
         ban = true,         -- If false player will be kicked
-        banMedia = "image", -- "video" or "video" or "false"
+        banMedia = 'image', -- 'image' or 'video' or 'false'
         whitelistedZones = {
             -- { -- EXAMPLE
             --     coords = vector3(0, 0, 0),
@@ -46,7 +46,7 @@ return {
         enable = false,
         minNicknameLength = 3,  -- Minimum lenght of palyer nicknames, set false to disable
         maxNicknameLength = 25, -- Maximum lenght of palyer nicknames, set false to disable
-        allowedPattern = "^[A-Za-z0-9_.%-%s]+$" -- Allowed characters, set false to disable
+        allowedPattern = '^[A-Za-z0-9_.%-%s]+$' -- Allowed characters, set false to disable
     },
     -- Detect if someone try to stop fiveguard
     AntiStopper = {
@@ -66,8 +66,8 @@ return {
     VehicleProtection = { -- Credit: @jona0081 for some detections included here
         enable = false,
         ban = true,         -- Ban (false = delete vehicle only)
-        banMedia = "image", -- "image" or "video" or "false"
-        detectNPC = false,  -- Can spawn client side event 
+        banMedia = 'image', -- 'image' or 'video' or 'false'
+        detectNPC = false,  -- Can spawn client side event
         cleanNotOwnedVehicles = false,
         preventSafeSpawn = {
             enable = true,
@@ -75,25 +75,36 @@ return {
                 { coords = vec3(-47.500000, -1097.199951, 25.400000), radius = 2.0 }
             },
         },
-        preventLaunchPlayer = false,    -- !!Can make false detections
-        preventInvalidOwner = false,    -- !!Can make false detections
-        preventNilResource = false,    -- !!Can make false detections
+        preventAttachVehicles = false,   -- !!Can make false detections
+        preventLaunchPlayer = false,     -- !!Can make false detections
+        preventInvalidOwner = false,     -- !!Can make false detections
+        preventNilResource = false,      -- !!Can make false detections
         preventUnNetworkedEntity = false,-- !!Can make false detections
         maxVehicleCheckDistance = 50,
         checkInterval = 5,
-        maxRetries = 5,
         preventUnauthorizedResource = {
             enable = false, -- If enabled, whitelist your resources below
             resourceWhitelisted = {
-                ["monitor"] = true,
-                ["es_extended"] = GetResourceState('es_extended') ~= 'missing',
-                ["qbx_core"] = GetResourceState('qbx_core') ~= 'missing',
-                ["qb-core"] = GetResourceState('qb-core') ~= 'missing',
-                ["ox_lib"] = GetResourceState('ox_lib') ~= 'missing',
-                ["esx_vehicleshop"] = GetResourceState('esx_vehicleshop') ~= 'missing',
-                ["esx_garages"] = GetResourceState('esx_garages') ~= 'missing',
-                ["qb-vehicleshop"] = GetResourceState('qb-vehicleshop') ~= 'missing',
-                ["qb-garages"] = GetResourceState('qb-garages') ~= 'missing'
+                ['monitor'] = true,
+                ['es_extended']         = GetResourceState('es_extended') ~= 'missing',
+                ['esx_vehicleshop']     = GetResourceState('esx_vehicleshop') ~= 'missing',
+                ['esx_garages']         = GetResourceState('esx_garages') ~= 'missing',
+                ['qb-core']             = GetResourceState('qb-core') ~= 'missing',
+                ['qb-vehicleshop']      = GetResourceState('qb-vehicleshop') ~= 'missing',
+                ['qb-garages']          = GetResourceState('qb-garages') ~= 'missing',
+                ['qbx_core']            = GetResourceState('qbx_core') ~= 'missing',
+                ['ox_lib']              = GetResourceState('ox_lib') ~= 'missing',
+                ['jg-advancedgarages']  = GetResourceState('jg-advancedgarages') ~= 'missing',
+                ['okokGarage']          = GetResourceState('okokGarage') ~= 'missing',
+                ['okokVehicleShop']     = GetResourceState('okokVehicleShop') ~= 'missing',
+                ['cd_garage']           = GetResourceState('cd_garage') ~= 'missing',
+                ['loaf_garage']         = GetResourceState('loaf_garage') ~= 'missing',
+                ['rcore_garage']        = GetResourceState('rcore_garage') ~= 'missing',
+                ['codem-garage']        = GetResourceState('codem-garage') ~= 'missing',
+                ['qs-smartphone-pro']   = GetResourceState('qs-smartphone-pro') ~= 'missing',
+                ['qs-smartphone']       = GetResourceState('qs-smartphone') ~= 'missing',
+                ['lb-phone']            = GetResourceState('lb-phone') ~= 'missing',
+                ['okokPhone']           = GetResourceState('okokPhone') ~= 'missing',
             }
         },
     },
@@ -104,7 +115,7 @@ return {
             enable = true,
             relaxed = false,    -- determinate if check every shot or no
             ban = true,         -- (false = weapon removed only)
-            banMedia = "image"  -- "image" or "video" or "false"
+            banMedia = 'image'  -- 'image' or 'video' or 'false'
         },
         AntiDistanceDamage = {
             punch = {
@@ -132,16 +143,16 @@ return {
         preventSafeExplosions = false,
         preventUnnetworkedExplosions = true,
         ban = true, -- If false player will be kicked
-        banMedia = "image" -- "image" or "video" or "false"
+        banMedia = 'image' -- 'image' or 'video' or 'false'
     },
 
     BlacklistedModels = {
         enable = true,
         ban = true,-- If false player will be kicked
-        banMedia = "image", -- "image" or "video" or "false"
+        banMedia = 'image', -- 'image' or 'video' or 'false'
         checkInterval = 10, --in seconds
         blacklist = { -- a list of ped/animal models that player can't use
-            [GetHashKey("a_c_fish")] = true,
+            [GetHashKey('a_c_fish')] = true,
             [GetHashKey('a_c_boar')] = true,
             [GetHashKey('a_c_boar_02')] = true,
             [GetHashKey('a_c_cat_01')] = true,
@@ -182,130 +193,180 @@ return {
         enable = true,
         verbose = false, -- if true, prints are more detailed and don't warn if player already have permission
         onClientTrigger = {
-            --[[ ["put:here:the:event:to:get:bypass"] = {
-                enable = true or false,
+            --[[
+                Use this for client-client events ( TriggerEvent )
 
-                --if the event is different:
-                endEvent = "put:here:the:event:to:remove:bypass",
-                --if the event is the same (first arg must be boolean):
-                endEvent = "put:here:the:event:to:get:bypass",
-                --if there's no END event (it will bypass for 5 seconds):
+                1) Event to enable + event to disable:
+                ['event:start'] = {
+                    enable = true,
+                    endEvent = 'event:end',
+                    bypass = 'BypassName'
+                },
+
+                2) Same event sends true/false:
+                ['event:switch'] = {
+                    enable = true,
+                    endEvent = 'event:switch',
+                    bypass = 'BypassName'
+                },
+
+                3) No disable event, remove after X seconds:
+                ['event:timed'] = {
+                    enable = true,
+                    endEvent = false,
+                    bypass = 'BypassName'
+                },
+
+                Multiple bypasses:
+                bypass = { 'Bypass1', 'Bypass2' }
+            ]]
+            ['jg-advancedgarages:client:open-garage'] = {
+                enable = GetResourceState('jg-advancedgarages') ~= 'missing',
+                endEvent = 'jg-advancedgarages:client:store-vehicle',
+                bypass = 'BypassVehicleModifier'
+            },
+            ['jg-dealerships:client:open-showroom'] = {
+                enable = GetResourceState('jg-dealerships') ~= 'missing',
+                endEvent = '__ox_cb_jg-dealerships:server:exit-showroom',
+                bypass = { 'BypassInvisible', 'BypassTeleport', 'BypassVehicleModifier' }
+            },
+            ['rcore_clothing:onClothingShopOpened'] = {
+                enable = GetResourceState('rcore_clothing') ~= 'missing',
+                endEvent = 'rcore_clothing:onClothingShopClosed',
+                bypass = 'BypassStealOutfit'
+            },
+            ['ik-jobgarage:openUI'] = {
+                enable = GetResourceState('ik-jobgarage') ~= 'missing',
+                endEvent = 'ik-jobgarage:server:SaveCarData',
+                bypass = 'BypassInvisible'
+            },
+            ['prison:client:Enter'] = {
+                enable = GetResourceState('qb-prison') ~= 'missing',
                 endEvent = false,
-                
-                bypass = "bypassName" or {"bypass","names"}
-            }, ]]
-            ["jg-advancedgarages:client:open-garage"] = {
-                enable = GetResourceState("jg-advancedgarages") ~= "missing",
-                endEvent = "jg-advancedgarages:client:store-vehicle",
-                bypass = "BypassVehicleModifier"
+                bypass = 'BypassTeleport'
             },
-            ["jg-dealerships:client:open-showroom"] = {
-                enable = GetResourceState("jg-dealerships") ~= "missing",
-                endEvent = "__ox_cb_jg-dealerships:server:exit-showroom",
-                bypass = { "BypassInvisible", "BypassTeleport", "BypassVehicleModifier" }
-            },
-            ["rcore_clothing:onClothingShopOpened"] = {
-                enable = GetResourceState("rcore_clothing") ~= "missing",
-                endEvent = "rcore_clothing:onClothingShopClosed",
-                bypass = "BypassStealOutfit"
-            },
-            ["ik-jobgarage:openUI"] = {
-                enable = GetResourceState("ik-jobgarage") ~= "missing",
-                endEvent = "ik-jobgarage:server:SaveCarData",
-                bypass = "BypassInvisible"
-            },
-            ["prison:client:Enter"] = {
-                enable = GetResourceState("qb-prison") ~= "missing",
+            ['prison:client:Leave'] = {
+                enable = GetResourceState('qb-prison') ~= 'missing',
                 endEvent = false,
-                bypass = "BypassTeleport"
+                bypass = 'BypassTeleport'
             },
-            ["prison:client:UnjailPerson"] = {
-                enable = GetResourceState("qb-prison") ~= "missing",
+            ['prison:client:UnjailPerson'] = {
+                enable = GetResourceState('qb-prison') ~= 'missing',
                 endEvent = false,
-                bypass = "BypassTeleport"
+                bypass = 'BypassTeleport'
             },
-            ["prison:client:Leave"] = {
-                enable = GetResourceState("qb-prison") ~= "missing",
+            ['rtx_mazebankattractions:UsingAttractionHandler'] = {
+                enable = GetResourceState('rtx_mazebank_themepark') ~= 'missing',
+                endEvent = 'rtx_mazebankattractions:UsingAttractionHandler',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_waterpark:UseWaterSlideClient'] = {
+                enable = GetResourceState('rtx_waterpark') ~= 'missing',
+                endEvent = 'rtx_waterpark:UseWaterSlideClient',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_waterpark_roxwood:UseWaterSlideClient'] = {
+                enable = GetResourceState('rtx_waterpark_roxwood') ~= 'missing',
+                endEvent = 'rtx_waterpark_roxwood:UseWaterSlideClient',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_spawnableattractions:Global:AttractionUsing'] = {
+                enable = GetResourceState('rtx_spawnableattractions') ~= 'missing',
+                endEvent = 'rtx_spawnableattractions:Global:AttractionUsing',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_themepark:Global:UsingAttractionPlayer'] = {
+                enable = GetResourceState('rtx_themepark') ~= 'missing',
+                endEvent = 'rtx_themepark:Global:UsingAttractionPlayer',
+                bypass = { 'BypassNoclip', 'BypassSpoofedWeapons', 'BypassBulletproofTires' }
+            },
+            ['jg-mechanic:client:open-customisation-menu'] = {
+                enable = GetResourceState('jg-mechanic') ~= 'missing',
                 endEvent = false,
-                bypass = "BypassTeleport"
-            },
-            ["rtx_mazebankattractions:UsingAttractionHandler"] = {
-                enable = GetResourceState("rtx_mazebank_themepark") ~= "missing",
-                endEvent = "rtx_mazebankattractions:UsingAttractionHandler",
-                bypass = "BypassNoclip"
-            },
-            ["rtx_waterpark:UseWaterSlideClient"] = {
-                enable = GetResourceState("rtx_waterpark") ~= "missing",
-                endEvent = "rtx_waterpark:UseWaterSlideClient",
-                bypass = "BypassNoclip"
-            },
-            ["rtx_waterpark_roxwood:UseWaterSlideClient"] = {
-                enable = GetResourceState("rtx_waterpark_roxwood") ~= "missing",
-                endEvent = "rtx_waterpark_roxwood:UseWaterSlideClient",
-                bypass = "BypassNoclip"
-            },
-            ["rtx_spawnableattractions:Global:AttractionUsing"] = {
-                enable = GetResourceState("rtx_spawnableattractions") ~= "missing",
-                endEvent = "rtx_spawnableattractions:Global:AttractionUsing",
-                bypass = "BypassNoclip"
+                duration = 10,
+                bypass = { 'BypassVehicleModifier', 'BypassBulletproofTires' }
             },
         },
         onServerTrigger = {
-            --[[ ["put:here:the:event:to:get:bypass"] = {
-                enable = true or false,
+            --[[
+                Use isNet = false for server-server events ( TriggerEvent )
+                Use isNet = true  for client-server events ( TriggerServerEvent )
 
-                --if the event is different:
-                endEvent = "put:here:the:event:to:remove:bypass",
-                --if the event is the same (first arg must be boolean):
-                endEvent = "put:here:the:event:to:get:bypass",
-                --if there's no END event (it will bypass for 5 seconds):
+                1) Event to enable + event to disable:
+                ['event:start'] = {
+                    enable = true,
+                    isNet = false,
+                    endEvent = 'event:end',
+                    bypass = 'BypassName'
+                },
+
+                2) Same event sends true/false:
+                ['event:switch'] = {
+                    enable = true,
+                    isNet = false,
+                    endEvent = 'event:switch',
+                    bypass = 'BypassName'
+                },
+
+                3) No disable event, remove after X seconds:
+                ['event:timed'] = {
+                    enable = true,
+                    isNet = false,
+                    endEvent = false,
+                    bypass = 'BypassName'
+                },
+
+                Multiple bypasses:
+                bypass = { 'Bypass1', 'Bypass2' }
+            ]]
+
+            ['lsrp_lunapark:Freefall:attachPlayer'] = {
+                enable = GetResourceState('lsrp_lunapark') ~= 'missing',
+                endEvent = 'lsrp_lunapark:Freefall:detachPlayer',
+                bypass = 'BypassNoclip',
+            },
+            ['lsrp_lunapark:RollerCoaster:attachPlayer'] = {
+                enable = GetResourceState('lsrp_lunapark') ~= 'missing',
+                endEvent = 'lsrp_lunapark:RollerCoaster:detachPlayer',
+                bypass = 'BypassNoclip'
+            },
+            ['lsrp_lunapark:Wheel:attachPlayer'] = {
+                enable = GetResourceState('lsrp_lunapark') ~= 'missing',
+                endEvent = 'lsrp_lunapark:Wheel:detachPlayer',
+                bypass = 'BypassNoclip',
+            },
+            ['rcore_prison:server:prologStarted'] = {
+                enable = GetResourceState('rcore_prison') ~= 'missing',
+                endEvent = 'rcore_prison:server:prologFinished',
+                bypass = 'BypassStealOutfit'
+            },
+            ['wasabi_police:sendToJail'] = {
+                enable = GetResourceState('wasabi_police') ~= 'missing',
                 endEvent = false,
-                
-                bypass = "bypassName" or {"bypass","names"}
-            }, ]]
-            ["lsrp_lunapark:Freefall:attachPlayer"] = {
-                enable = GetResourceState("lsrp_lunapark") ~= "missing",
-                endEvent = "lsrp_lunapark:Freefall:detachPlayer",
-                bypass = "BypassNoclip",
+                duration = 10,
+                bypass = 'BypassTeleport'
             },
-            ["lsrp_lunapark:RollerCoaster:attachPlayer"] = {
-                enable = GetResourceState("lsrp_lunapark") ~= "missing",
-                endEvent = "lsrp_lunapark:RollerCoaster:detachPlayer",
-                bypass = "BypassNoclip"
+            ['jg-mechanic:server:startHandlingEdit'] = {
+                enable = GetResourceState('jg-mechanic') ~= 'missing',
+                endEvent = 'jg-mechanic:server:finishHandlingEdit',
+                bypass = {'BypassVehicleHandlingEdit','BypassVehicleModifier', 'BypassVehicleFixAndGodMode'}
             },
-            ["lsrp_lunapark:Wheel:attachPlayer"] = {
-                enable = GetResourceState("lsrp_lunapark") ~= "missing",
-                endEvent = "lsrp_lunapark:Wheel:detachPlayer",
-                bypass = "BypassNoclip",
-            },
-            ["rcore_prison:server:prologStarted"] = {
-                enable = GetResourceState("rcore_prison") ~= "missing",
-                endEvent = "rcore_prison:server:prologFinished",
-                bypass = "BypassStealOutfit"
-            },
-            ["rtx_themepark:Global:UsingAttractionPlayer"] = {
-                enable = GetResourceState("rtx_themepark") ~= "missing",
-                endEvent = "rtx_themepark:Global:UsingAttractionPlayer",
-                bypass = { "BypassNoclip", "BypassSpoofedWeapons", "BypassBulletproofTires" }
-            },
-            ["wasabi_police:sendToJail"] = {
-                enable = GetResourceState("wasabi_police") ~= "missing",
+            ['jg-mechanic:server:sync-vehicle-repair'] = {
+                enable = GetResourceState('jg-mechanic') ~= 'missing',
                 endEvent = false,
-                bypass = "BypassTeleport"
-            }
+                bypass = 'BypassVehicleFixAndGodMode'
+            },
         },
         -- it will use the module bypassNative to detect autmatically if a script need to set a player invisible or teleport him
         wrapNatives = {
-            -- It enable  exports["addon"]:SafeSetEntityCoords(playerId, true or false, GetCurrentResourceName())
-                        --exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassTeleport", true --[[ or false ]], GetCurrentResourceName()) /
-                        --TriggerServerEvent("fg:addon:SetTempPermission:BypassTeleport", true --[[ or false ]], GetCurrentResourceName())
+            -- It enable  exports['addon']:SafeSetEntityCoords(playerId, true or false, GetCurrentResourceName())
+                        --TriggerServerEvent('fg:addon:SetTempPermission:BypassTeleport', true --[[ or false ]], GetCurrentResourceName())
             SetEntityCoords = true,
-            -- It enable  exports["addon"]:SafeSetEntityCoords(playerId, true or false, GetCurrentResourceName())
-                        --exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassInvisible", true --[[ or false ]], GetCurrentResourceName()) /
-                        --TriggerServerEvent("fg:addon:SetTempPermission:BypassInvisible", true --[[ or false ]], GetCurrentResourceName())
+            -- It enable  exports['addon']:SafeSetEntityVisible(playerId, true or false, GetCurrentResourceName())
+                        --TriggerServerEvent('fg:addon:SetTempPermission:BypassInvisible', true --[[ or false ]], GetCurrentResourceName())
             SetEntityVisible = true,
-                        -- It enable exports["anticheat-name"]:ExecuteServerEvent("fg:addon:SetTempPermission:BypassVehicleFixAndGodMode", true --[[ or false ]], GetCurrentResourceName()) /
-                                  -- TriggerServerEvent("fg:addon:SetTempPermission:BypassVehicleFixAndGodMode", true --[[ or false ]], GetCurrentResourceName())
+            -- It enable  exports['anticheat-name']:ExecuteServerEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', true --[[ or false ]], GetCurrentResourceName()) /
+                        -- TriggerServerEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', true --[[ or false ]], GetCurrentResourceName())
             SetVehicleFixed = true
         }
     },
@@ -318,55 +379,55 @@ return {
             enable = false,
             fgPermissions = { -- Permissions that'll be set if player has TxAdmin Access
                 --[[ AdminMenu ]]  --
-                    "AdminMenuAccess",
-                    "AnnouncementAccess",
-                    "ESPAccess",
-                    "ClearEntitiesAccess",
-                    "BanAndKickAccess",
-                    "GotoAndBringAccess",
-                    "VehicleAccess",
-                    "MiscAccess",
-                    "LogsAccess",
-                    "PlayerSelectorAccess",
-                    "BanListAndUnbanAccess",
-                    "ModelChangerAccess",
+                    'AdminMenuAccess',
+                    'AnnouncementAccess',
+                    'ESPAccess',
+                    'ClearEntitiesAccess',
+                    'BanAndKickAccess',
+                    'GotoAndBringAccess',
+                    'VehicleAccess',
+                    'MiscAccess',
+                    'LogsAccess',
+                    'PlayerSelectorAccess',
+                    'BanListAndUnbanAccess',
+                    'ModelChangerAccess',
                 --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                 --[[ Weapon ]] --
-                    "BypassWeaponDmgModifier",
-                    "BypassInfAmmo",
-                    "BypassNoReload",
-                    "BypassRapidFire",
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
                 --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                 --[[ Blacklist ]] --
-                    "BypassModelChanger",
-                    "BypassWeaponBlacklist",
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
                 --[[ Misc ]] --
-                    "FGCommands",
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'FGCommands',
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
             }
         },
         -- Use framework permission to determinate when add or remove fg perms
@@ -380,175 +441,175 @@ return {
             groups = {
                 ['god'] = {
                     --[[ AdminMenu ]] --
-                    "AdminMenuAccess",
-                    "AnnouncementAccess",
-                    "ESPAccess",
-                    "ClearEntitiesAccess",
-                    "BanAndKickAccess",
-                    "GotoAndBringAccess",
-                    "VehicleAccess",
-                    "MiscAccess",
-                    "LogsAccess",
-                    "PlayerSelectorAccess",
-                    "BanListAndUnbanAccess",
-                    "ModelChangerAccess",
+                    'AdminMenuAccess',
+                    'AnnouncementAccess',
+                    'ESPAccess',
+                    'ClearEntitiesAccess',
+                    'BanAndKickAccess',
+                    'GotoAndBringAccess',
+                    'VehicleAccess',
+                    'MiscAccess',
+                    'LogsAccess',
+                    'PlayerSelectorAccess',
+                    'BanListAndUnbanAccess',
+                    'ModelChangerAccess',
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Weapon ]] --
-                    "BypassWeaponDmgModifier",
-                    "BypassInfAmmo",
-                    "BypassNoReload",
-                    "BypassRapidFire",
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Blacklist ]] --
-                    "BypassModelChanger",
-                    "BypassWeaponBlacklist",
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
                     --[[ Misc ]] --
-                    "FGCommands",
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'FGCommands',
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 },
                 ['admin'] = {
                     --[[ AdminMenu ]] --
-                    "AdminMenuAccess",
-                    "AnnouncementAccess",
-                    "ESPAccess",
-                    "ClearEntitiesAccess",
-                    "BanAndKickAccess",
-                    "GotoAndBringAccess",
-                    "VehicleAccess",
-                    "MiscAccess",
-                    "LogsAccess",
-                    "PlayerSelectorAccess",
-                    "BanListAndUnbanAccess",
-                    "ModelChangerAccess",
+                    'AdminMenuAccess',
+                    'AnnouncementAccess',
+                    'ESPAccess',
+                    'ClearEntitiesAccess',
+                    'BanAndKickAccess',
+                    'GotoAndBringAccess',
+                    'VehicleAccess',
+                    'MiscAccess',
+                    'LogsAccess',
+                    'PlayerSelectorAccess',
+                    'BanListAndUnbanAccess',
+                    'ModelChangerAccess',
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Weapon ]] --
-                    "BypassWeaponDmgModifier",
-                    "BypassInfAmmo",
-                    "BypassNoReload",
-                    "BypassRapidFire",
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Blacklist ]] --
-                    "BypassModelChanger",
-                    "BypassWeaponBlacklist",
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
                     --[[ Misc ]] --
-                    "FGCommands",
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'FGCommands',
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 },
                 ['mod'] = {
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Weapon ]] --
-                    "BypassWeaponDmgModifier",
-                    "BypassInfAmmo",
-                    "BypassNoReload",
-                    "BypassRapidFire",
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Blacklist ]] --
-                    "BypassModelChanger",
-                    "BypassWeaponBlacklist",
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
                     --[[ Misc ]] --
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 },
                 ['helper'] = {
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Misc ]] --
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 }
             }
         },
@@ -558,123 +619,123 @@ return {
             groups = {      -- define wich perms you want to add for a specific group
                 ['admin'] = {
                     --[[ AdminMenu ]] --
-                    "AdminMenuAccess",
-                    "AnnouncementAccess",
-                    "ESPAccess",
-                    "ClearEntitiesAccess",
-                    "BanAndKickAccess",
-                    "GotoAndBringAccess",
-                    "VehicleAccess",
-                    "MiscAccess",
-                    "LogsAccess",
-                    "PlayerSelectorAccess",
-                    "BanListAndUnbanAccess",
-                    "ModelChangerAccess",
+                    'AdminMenuAccess',
+                    'AnnouncementAccess',
+                    'ESPAccess',
+                    'ClearEntitiesAccess',
+                    'BanAndKickAccess',
+                    'GotoAndBringAccess',
+                    'VehicleAccess',
+                    'MiscAccess',
+                    'LogsAccess',
+                    'PlayerSelectorAccess',
+                    'BanListAndUnbanAccess',
+                    'ModelChangerAccess',
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Weapon ]] --
-                    "BypassWeaponDmgModifier",
-                    "BypassInfAmmo",
-                    "BypassNoReload",
-                    "BypassRapidFire",
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Blacklist ]] --
-                    "BypassModelChanger",
-                    "BypassWeaponBlacklist",
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
                     --[[ Misc ]] --
-                    "FGCommands",
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'FGCommands',
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 },
                 ['mod'] = {
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Weapon ]] --
-                    "BypassWeaponDmgModifier",
-                    "BypassInfAmmo",
-                    "BypassNoReload",
-                    "BypassRapidFire",
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Blacklist ]] --
-                    "BypassModelChanger",
-                    "BypassWeaponBlacklist",
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
                     --[[ Misc ]] --
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 },
                 ['helper'] = {
                     --[[ Client ]] --
-                    "BypassSpectate",
-                    "BypassGodMode",
-                    "BypassInvisible",
-                    "BypassStealOutfit",
-                    "BypassInfStamina",
-                    "BypassNoclip",
-                    "BypassSuperJump",
-                    "BypassFreecam",
-                    "BypassSpeedHack",
-                    "BypassTeleport",
-                    "BypassNightVision",
-                    "BypassThermalVision",
-                    "BypassOCR",
-                    "BypassNuiDevtools",
-                    "BypassBlacklistedTextures",
-                    "BlipsBypass",
-                    "BypassCbScanner",
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
                     --[[ Vehicle ]] --
-                    "BypassVehicleFixAndGodMode",
-                    "BypassVehicleHandlingEdit",
-                    "BypassVehicleModifier",
-                    "BypassBulletproofTires",
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
                     --[[ Misc ]] --
-                    "BypassVPN",
-                    "BypassExplosion",
-                    "BypassClearTasks",
-                    "BypassParticle"
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle'
                 }
             }
         }
