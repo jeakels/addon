@@ -56,7 +56,9 @@ return {
     },
 
     AntiPedManipulation = { -- Credit: @somis12
-        enable = not GetConvarBool("onesync_population", true),
+        -- If it gives you false bans, change the "true" below to "false" (enable = true / enable = false).
+        -- NOTE: The system will still activate ONLY if onesync_population is disabled.
+        enable = true and not GetConvarBool("onesync_population", true),
         maxBucketUsed = 15000,
         ban = true -- If false player will be kicked
     },
