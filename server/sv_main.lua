@@ -4,24 +4,18 @@ READY = false
 while not Fiveguard do Citizen.Wait(0) end
 
 local function checkVersion()
-    local resName = GetInvokingResource() or GetCurrentResourceName()
-    local version = GetResourceMetadata(resName, 'version', 0)
-
-    if version then
-        version = version:match('(%d+%.%d+%.%d+)')
-    else
-        Error('Can\'t read version')
-        return
-    end
+    local version = GetResourceMetadata(CurrentResourceName, 'version', 0)
+    if version then version = version:match('(%d+%.%d+%.%d+)')
+    else Error('Can\'t read version') return end
 
     Citizen.SetTimeout(1500, function()
         PerformHttpRequest('https://api.github.com/repos/jeakels/addon/releases/latest', function(code, body)
             if code ~= 200 or not body then return end
 
-            local data = json.decode(body)
-            if not data or data.prerelease then return end
+            local bData = json.decode(body)
+            if not bData or bData.prerelease then return end
 
-            local latest = data.tag_name and data.tag_name:match('(%d+%.%d+%.%d+)')
+            local latest = bData.tag_name and bData.tag_name:match('(%d+%.%d+%.%d+)')
             if not latest or latest == version then return end
 
             local function splitVersion(v)
@@ -40,7 +34,7 @@ local function checkVersion()
                 local l = latestParts[i] or 0
 
                 if c < l then
-                    Warn(('Update available (%s → %s) %s'):format(version, latest, data.html_url))
+                    Warn(('Update available (%s → %s) %s'):format(version, latest, bData.html_url))
                     return
                 elseif c > l then
                     Warn(('Using unreleased version: %s Latest stable version: %s'):format(version, latest))
@@ -51,7 +45,7 @@ local function checkVersion()
     end)
 end
 
-local CORRECT_FXMANIFEST = 'fx_version \'cerulean\'\ngame \'gta5\'\n\nauthor \'Community of fiveguard.net\'\ndescription \'Addon pack for fiveguard\'\nversion \'1.6.0\'\nlua54 \'yes\'\naddon \'yes\'\n\ndata_file \'DLC_ITYP_REQUEST\' \'stream/mads_no_exp_pumps.ytyp\'\n\nshared_script \'shared.lua\'\n\nserver_scripts {\n    \'server/sv_resourceManager.js\',\n    \'server/sv_main.lua\',\n    \'server/sv_antiExplosion.lua\',\n    \'server/sv_antiThrow.lua\',\n    \'server/sv_antiPedManipulation.lua\',\n    \'server/sv_antiStopper.lua\',\n    \'server/sv_backlistModels.lua\',\n    \'server/sv_checkNicknames.lua\',\n    \'server/sv_crashProtection.lua\',\n    \'server/sv_easyBypass.lua\',\n    \'server/sv_easyPermissions.lua\',\n    \'server/sv_heartbeat.lua\',\n    \'server/sv_vehicleProtection.lua\',\n    \'server/sv_weaponProtection.lua\'\n}\n\nclient_scripts {\n    \'client/cl_main.lua\',\n    \'client/cl_antiThrow.lua\',\n    \'client/cl_crashProtection.lua\',\n    \'client/cl_antiPedManipulation.lua\',\n    \'client/cl_antiStopper.lua\',\n    \'client/cl_easyBypass.lua\',\n    \'client/cl_heartbeat.lua\',\n    \'client/cl_vehicleProtection.lua\',\n    \'client/cl_weaponProtection.lua\'\n}\n\nfile \'bypassNative.lua\'\nfile \'config.lua\'\nfile \'xss.lua\'\n'
+local CORRECT_FXMANIFEST = 'fx_version \'cerulean\'\ngame \'gta5\'\n\nauthor \'Community of fiveguard.net\'\ndescription \'Addon pack for fiveguard\'\nversion \'1.6.1\'\nlua54 \'yes\'\naddon \'yes\'\n\ndata_file \'DLC_ITYP_REQUEST\' \'stream/mads_no_exp_pumps.ytyp\'\n\nshared_script \'shared.lua\'\n\nserver_scripts {\n    \'server/sv_resourceManager.js\',\n    \'server/sv_main.lua\',\n    \'server/sv_antiExplosion.lua\',\n    \'server/sv_antiThrow.lua\',\n    \'server/sv_antiPedManipulation.lua\',\n    \'server/sv_antiFiveguardStopper.lua\',\n    \'server/sv_backlistModels.lua\',\n    \'server/sv_checkNicknames.lua\',\n    \'server/sv_crashProtection.lua\',\n    \'server/sv_easyBypass.lua\',\n    \'server/sv_easyPermissions.lua\',\n    \'server/sv_fiveguardUpateEnsurer.lua\',\n    \'server/sv_heartbeat.lua\',\n    \'server/sv_vehicleProtection.lua\',\n    \'server/sv_weaponProtection.lua\'\n}\n\nclient_scripts {\n    \'client/cl_main.lua\',\n    \'client/cl_antiThrow.lua\',\n    \'client/cl_crashProtection.lua\',\n    \'client/cl_antiPedManipulation.lua\',\n    \'client/cl_antiFiveguardStopper.lua\',\n    \'client/cl_easyBypass.lua\',\n    \'client/cl_heartbeat.lua\',\n    \'client/cl_vehicleProtection.lua\',\n    \'client/cl_weaponProtection.lua\'\n}\n\nfile \'bypassNative.lua\'\nfile \'config.lua\'\nfile \'xss.lua\'\n'
 
 local function checkAndFixFxmanifest()
     local function simple_hash(s)
@@ -102,44 +96,35 @@ function PunishPlayer(source, ban, reason, mediaType)
         DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
         return
     end
+    if Config.CustomWebhookURL and string.len(Config.CustomWebhookURL) < 80 then Config.CustomWebhookURL = nil end
+    local mediaUrl
     if tostring(mediaType) == 'video' then
-        if isRecording[source] then Debug(('Ignoring player ban since it\'s getting banned'):format())return end
+        if isRecording[source] then Debug(('Ignoring punishment of player [^5%s^0] ^5%s^0 since it\'s getting banned'):format(source, GetPlayerName(source))) return end
         isRecording[source] = true
-        if Config.CustomWebhookURL and string.len(Config.CustomWebhookURL) < 80 then
-            Config.CustomWebhookURL = nil
-        end
+        local p = promise.new()
         exports[Fiveguard]:recordPlayerScreen(source, Config.RecordTime*1000, function(success)
-            if success then
-                reason = reason .. ' '..tostring(success)
-                Debug(('Player [^5%s^0] ^5%s^0 recorded successfully'):format(source, GetPlayerName(source)))
-            else
-                Warn(('Unable to record the player [^5%s^1] ^5%s^1'):format(source, GetPlayerName(source)))
-            end
-            exports[Fiveguard]:fg_BanPlayer(source, reason, true)
+            if success then Debug(('Player [^5%s^0] ^5%s^0 recorded successfully'):format(source, GetPlayerName(source)))
+            else Warn(('Unable to record the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
+            p:resolve(success)
         end, Config.CustomWebhookURL)
+        mediaUrl = Citizen.Await(p)
     elseif tostring(mediaType) == 'image' then
+        local p = promise.new()
         exports[Fiveguard]:screenshotPlayer(source, function(success)
-            if success then
-                reason = reason .. ' '..tostring(success)
-                Debug(('Player [^5%s^0] ^5%s^0 screenshotted successfully'):format(source, GetPlayerName(source)))
-            else
-                Warn(('Unable to screenshot the player [^5%s^1] ^5%s^1'):format(source, GetPlayerName(source)))
-            end
-            exports[Fiveguard]:fg_BanPlayer(source, reason, true)
+            if success then Debug(('Player [^5%s^0] ^5%s^0 screenshotted successfully'):format(source, GetPlayerName(source)))
+            else Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
+            p:resolve(success)
         end, Config.CustomWebhookURL)
-    else
-        exports[Fiveguard]:fg_BanPlayer(source, reason, true)
+        mediaUrl = Citizen.Await(p)
     end
+    exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true)
 end
 AddEventHandler('playerDropped', function()
     isRecording[source] = nil
 end)
 
 Citizen.CreateThread(function()
-    if checkAndFixFxmanifest() then
-        READY = false
-        return
-    end
+    if checkAndFixFxmanifest() then READY = false return end
     local logo = ([[
 ^3                A                          ddddddd             ddddddd ^0
 ^3               A:A                         d:::::d             d:::::d ^0
@@ -159,13 +144,9 @@ Citizen.CreateThread(function()
 ^3 A:::::A                 A:::::A d::::::::::d::::d   d::::::::::d::::d ^0 oo:::::::::::oo  n::::n    n::::n
 ^3AAAAAAA                   AAAAAAA ddddddddd   dddd    ddddddddd   dddd ^0   ooooooooooo    nnnnnn    nnnnnn
 version %s                                        By Jeakels and contributors. Powered by ^3five^0guard%s]]):format(GetResourceMetadata(CurrentResourceName, 'version', 0),'\n')
-    local function splitCamelCase(str)
-        return (str:gsub('(%l)(%u)', '%1 %2'))
-    end
+    local function splitCamelCase(str) return (str:gsub('(%l)(%u)', '%1 %2')) end
     local keys = {}
-    for k, v in pairs(Config) do
-        if type(v) == 'table' then table.insert(keys, k) end
-    end
+    for k, v in pairs(Config) do if type(v) == 'table' then table.insert(keys, k) end end
     table.sort(keys, function(a, b) return a:lower() < b:lower() end)
     local maxw = 0
     for _, k in ipairs(keys) do
@@ -174,9 +155,7 @@ version %s                                        By Jeakels and contributors. P
     end
     local STATUS_W = 8
     local inner_w = 1 + maxw + 1 + STATUS_W + 1
-    local function hline()
-        return '|' .. string.rep('=', inner_w) .. '|'
-    end
+    local function hline() return '|' .. string.rep('=', inner_w) .. '|' end
     local function title_line(title)
         local t = ' ' .. title .. ' '
         local pad = inner_w - #t
@@ -213,7 +192,8 @@ version %s                                        By Jeakels and contributors. P
             Warn('Seems like Fiveguard (^3'..Fiveguard..'^0) is started but not ready yet, checking again... (attempt: '..attempts..')^0')
             attempts += 1
             if attempts <= 5 then goto recheckFG end
-            Error('Fiveguard is started but it\'s not working properly, make sure it\'s properly installed with an active subscription!')
+            Error('Fiveguard is started but it\'s not working properly, make sure it\'s properly installed with an active subscription and no errors below!')
+            ExecuteCommand('ensure '..Fiveguard)
             for _, cfg in pairs(Config) do
                 if type(cfg) == 'table' and cfg.enable then
                     cfg.enable = false
