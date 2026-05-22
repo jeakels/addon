@@ -1,21 +1,21 @@
 return {
     Debug = false,
-    CheckUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
-    -- custom storage for video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
-    CustomWebhookURL = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images
+    CustomWebhookURL = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
     RecordTime = 5, -- (seconds)
-    -- prevent cheaters to stop client side of this resource
+    CheckUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
+    FiveguardUpdateEnsurer = {
+        enable = true -- Automatically restarts fiveguard when an update is installed avoiding downtimes, remember that this can crash players since restarting resources runtime is not reccomended (manual or by scripts or wathever).
+    },
     Heartbeat = {
-        enable = true,
+        enable = true,   -- prevent cheaters to stop client side of this resource
         joinGrace = 30,  -- Seconds ignored after the player spawned
         threadTime = 5,  -- Interval between heartbeats (seconds)
         graceMisses = 3, -- How many consecutive misses are tolerated before punishment
         tokenExpiry = 10,-- Token expiry time (seconds)
         ban = false      -- If false player will be kicked
     },
-    -- prevent cheaters to crash players
     CrashProtection = {
-        enable = true,
+        enable = true,      -- prevent cheaters to crash players
         ban = true,         -- If false, the player will only be kicked/blocked
         banMedia = 'image', -- 'image', 'video' or 'false'
         preventLumia = true,
@@ -25,9 +25,8 @@ return {
         preventFootIK = true,
         preventSouthMenu = true
     },
-    -- prevent cheaters to take and launch vehicles
     AntiThrow = {
-        enable = true,
+        enable = true,      -- prevent cheaters to take and launch vehicles
         ban = true,         -- If false player will be kicked
         banMedia = 'image', -- 'image' or 'video' or 'false'
         whitelistedZones = {
@@ -41,20 +40,17 @@ return {
             } or nil
         }
     },
-
     CheckNicknames = {
-        enable = false,
+        enable = false,         -- block players that don't follow the allowed characters
         minNicknameLength = 3,  -- Minimum lenght of palyer nicknames, set false to disable
         maxNicknameLength = 25, -- Maximum lenght of palyer nicknames, set false to disable
         allowedPattern = '^[A-Za-z0-9_.%-%s]+$' -- Allowed characters, set false to disable
     },
-    -- Detect if someone try to stop fiveguard
-    AntiStopper = {
-        enable = true,
-        ban = true,         -- If false player will be kicked
-        checkInterval = 5   -- interval in seconds
+    AntiFiveguardStopper = {
+        enable = true,    -- Detect if someone try to stop fiveguard
+        ban = true,       -- If false player will be kicked
+        checkInterval = 5 -- interval in seconds
     },
-
     AntiPedManipulation = { -- Credit: @somis12
         -- If it gives you false bans, change the "true" below to "false" (enable = true / enable = false).
         -- NOTE: The system will still activate ONLY if onesync_population is disabled.
@@ -62,9 +58,8 @@ return {
         maxBucketUsed = 15000,
         ban = true -- If false player will be kicked
     },
-
     VehicleProtection = { -- Credit: @jona0081 for some detections included here
-        enable = false,
+        enable = true,
         ban = true,         -- Ban (false = delete vehicle only)
         banMedia = 'image', -- 'image' or 'video' or 'false'
         detectNPC = false,  -- Can spawn client side event
@@ -72,20 +67,21 @@ return {
         preventSafeSpawn = {
             enable = true,
             whitelistedCoords = {
-                { coords = vec3(-47.500000, -1097.199951, 25.400000), radius = 2.0 }
+                { coords = vec3(-47.500000, -1097.199951, 25.400000), radius = 2.0 },
+                { coords = vec3(519.2477, -2618.788, -50.000), radius = 20.0 }
             },
         },
-        preventAttachVehicles = false,   -- !!Can make false detections
-        preventLaunchPlayer = false,     -- !!Can make false detections
-        preventInvalidOwner = false,     -- !!Can make false detections
-        preventNilResource = false,      -- !!Can make false detections
-        preventUnNetworkedEntity = false,-- !!Can make false detections
+        preventAttachVehicles = false,    -- !!Can make false detections
+        preventLaunchPlayer = false,      -- !!Can make false detections
+        preventInvalidOwner = false,      -- !!Can make false detections
+        preventNilResource = false,       -- !!Can make false detections
+        preventUnNetworkedEntity = false, -- !!Can make false detections
         maxVehicleCheckDistance = 50,
         checkInterval = 5,
         preventUnauthorizedResource = {
-            enable = false, -- If enabled, whitelist your resources below
+            enable = false,               -- If enabled, whitelist your resources below
             resourceWhitelisted = {
-                ['monitor'] = true,
+                ['monitor']             = GetResourceState('monitor') ~= 'missing',
                 ['es_extended']         = GetResourceState('es_extended') ~= 'missing',
                 ['esx_vehicleshop']     = GetResourceState('esx_vehicleshop') ~= 'missing',
                 ['esx_garages']         = GetResourceState('esx_garages') ~= 'missing',
@@ -108,7 +104,6 @@ return {
             }
         },
     },
-
     WeaponProtection = {
         enable = true,
         AntiGiveWeapon = { -- Credit: @locutor404 & @somis12
@@ -136,7 +131,6 @@ return {
             ban = true
         }
     },
-
     AntiExplosions = {
         enable = true,
         preventExplosions = true, -- Crédit: @jona0081
@@ -145,7 +139,6 @@ return {
         ban = true, -- If false player will be kicked
         banMedia = 'image' -- 'image' or 'video' or 'false'
     },
-
     BlacklistedModels = {
         enable = true,
         ban = true,-- If false player will be kicked
@@ -188,9 +181,8 @@ return {
             [GetHashKey('a_c_westy')] = true
         },
     },
-    -- Allows players to get a bypass directly by native execution on installed resources or when a event configured is triggered
     EasyBypass = {
-        enable = true,
+        enable = true, -- Allows players to get a bypass directly by native execution on installed resources or when a event configured is triggered
         verbose = false, -- if true, prints are more detailed and don't warn if player already have permission
         onClientTrigger = {
             --[[
@@ -255,31 +247,6 @@ return {
                 endEvent = false,
                 bypass = 'BypassTeleport'
             },
-            ['rtx_mazebankattractions:UsingAttractionHandler'] = {
-                enable = GetResourceState('rtx_mazebank_themepark') ~= 'missing',
-                endEvent = 'rtx_mazebankattractions:UsingAttractionHandler',
-                bypass = 'BypassNoclip'
-            },
-            ['rtx_waterpark:UseWaterSlideClient'] = {
-                enable = GetResourceState('rtx_waterpark') ~= 'missing',
-                endEvent = 'rtx_waterpark:UseWaterSlideClient',
-                bypass = 'BypassNoclip'
-            },
-            ['rtx_waterpark_roxwood:UseWaterSlideClient'] = {
-                enable = GetResourceState('rtx_waterpark_roxwood') ~= 'missing',
-                endEvent = 'rtx_waterpark_roxwood:UseWaterSlideClient',
-                bypass = 'BypassNoclip'
-            },
-            ['rtx_spawnableattractions:Global:AttractionUsing'] = {
-                enable = GetResourceState('rtx_spawnableattractions') ~= 'missing',
-                endEvent = 'rtx_spawnableattractions:Global:AttractionUsing',
-                bypass = 'BypassNoclip'
-            },
-            ['rtx_themepark:Global:UsingAttractionPlayer'] = {
-                enable = GetResourceState('rtx_themepark') ~= 'missing',
-                endEvent = 'rtx_themepark:Global:UsingAttractionPlayer',
-                bypass = { 'BypassNoclip', 'BypassSpoofedWeapons', 'BypassBulletproofTires' }
-            },
             ['jg-mechanic:client:open-customisation-menu'] = {
                 enable = GetResourceState('jg-mechanic') ~= 'missing',
                 endEvent = false,
@@ -319,7 +286,36 @@ return {
                 Multiple bypasses:
                 bypass = { 'Bypass1', 'Bypass2' }
             ]]
-
+            ['rtx_themepark:Global:UsingAttractionPlayer'] = {
+                enable = GetResourceState('rtx_themepark') ~= 'missing',
+                isNet = true,
+                endEvent = 'rtx_themepark:Global:UsingAttractionPlayer',
+                bypass = { 'BypassNoclip', 'BypassSpoofedWeapons', 'BypassBulletproofTires' }
+            },
+            ['rtx_mazebankattractions:UsingAttractionHandler'] = {
+                enable = GetResourceState('rtx_mazebank_themepark') ~= 'missing',
+                isNet = true,
+                endEvent = 'rtx_mazebankattractions:UsingAttractionHandler',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_waterpark:UseWaterSlideClient'] = {
+                enable = GetResourceState('rtx_waterpark') ~= 'missing',
+                isNet = true,
+                endEvent = 'rtx_waterpark:UseWaterSlideClient',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_waterpark_roxwood:UseWaterSlideClient'] = {
+                enable = GetResourceState('rtx_waterpark_roxwood') ~= 'missing',
+                isNet = true,
+                endEvent = 'rtx_waterpark_roxwood:UseWaterSlideClient',
+                bypass = 'BypassNoclip'
+            },
+            ['rtx_spawnableattractions:Global:AttractionUsing'] = {
+                enable = GetResourceState('rtx_spawnableattractions') ~= 'missing',
+                isNet = true,
+                endEvent = 'rtx_spawnableattractions:Global:AttractionUsing',
+                bypass = 'BypassNoclip'
+            },
             ['lsrp_lunapark:Freefall:attachPlayer'] = {
                 enable = GetResourceState('lsrp_lunapark') ~= 'missing',
                 endEvent = 'lsrp_lunapark:Freefall:detachPlayer',
@@ -357,26 +353,30 @@ return {
                 bypass = 'BypassVehicleFixAndGodMode'
             },
         },
-        -- it will use the module bypassNative to detect autmatically if a script need to set a player invisible or teleport him
-        wrapNatives = {
-            -- It enable  exports['addon']:SafeSetEntityCoords(playerId, true or false, GetCurrentResourceName())
-                        --TriggerServerEvent('fg:addon:SetTempPermission:BypassTeleport', true --[[ or false ]], GetCurrentResourceName())
+        wrapNatives = { -- it will use the module bypassNative to detect autmatically if a script need to set a player invisible or teleport him
+            -- It enable:
+                -- exports['addon']:SafeSetEntityCoords(playerId, true --[[ or false ]], GetCurrentResourceName())
+                --TriggerServerEvent('fg:addon:SetTempPermission:BypassTeleport', true --[[ or false ]], GetCurrentResourceName())
             SetEntityCoords = true,
-            -- It enable  exports['addon']:SafeSetEntityVisible(playerId, true or false, GetCurrentResourceName())
-                        --TriggerServerEvent('fg:addon:SetTempPermission:BypassInvisible', true --[[ or false ]], GetCurrentResourceName())
+            -- It enable:
+                -- exports['addon']:SafeSetEntityVisible(playerId, true --[[ or false ]], GetCurrentResourceName())
+                --TriggerServerEvent('fg:addon:SetTempPermission:BypassInvisible', true --[[ or false ]], GetCurrentResourceName())
             SetEntityVisible = true,
-            -- It enable  exports['anticheat-name']:ExecuteServerEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', true --[[ or false ]], GetCurrentResourceName()) /
-                        -- TriggerServerEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', true --[[ or false ]], GetCurrentResourceName())
-            SetVehicleFixed = true
+            -- It enable:
+                -- exports['addon']:SafeSetEntityVisible(playerId, true --[[ or false ]], GetCurrentResourceName())
+                -- TriggerServerEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', true --[[ or false ]], GetCurrentResourceName())
+            SetVehicleFixed = true,
+            -- It enable:
+                -- exports['addon']:SafeSetPedComponentVariation(playerId, true --[[ or false ]], GetCurrentResourceName())
+                -- TriggerServerEvent('fg:addon:SetTempPermission:BypassStealOutfit', true --[[ or false ]], GetCurrentResourceName())
+            SetPedComponentVariation = true,
         }
     },
-
     EasyPermissions = {
-        enable = false, -- MASTER SWITCH
+        enable = false,
         -- !! DO NOT ENABLE MORE THAN 1 PERMISSION SYSTEM BELOW AT SAME TIME! Default is ACE
-        -- Bypass txAdmin admins
         txAdminPermissions = {
-            enable = false,
+            enable = false,   -- Bypass txAdmin admins
             fgPermissions = { -- Permissions that'll be set if player has TxAdmin Access
                 --[[ AdminMenu ]]  --
                     'AdminMenuAccess',
@@ -430,9 +430,8 @@ return {
                     'BypassParticle'
             }
         },
-        -- Use framework permission to determinate when add or remove fg perms
         FrameworkPermissions = {
-            enable = true,
+            enable = true, -- Use framework permission to determinate when add or remove fg perms
             customFramework = {
                 enable = false, -- enable this only if u have a custom settings and u know what u are doing
                 customEvent = '', -- name of the events that's triggered when a player get/lose a group
@@ -613,8 +612,7 @@ return {
                 }
             }
         },
-        -- Use ACE Permissions from FiveM natives
-        AcePermissions = {
+        AcePermissions = {  -- Use ACE Permissions from FiveM natives
             enable = false, -- Group Ace Permissions // ONLY ESX FOR THE MOMENT (Soon QbCore & vRP)
             groups = {      -- define wich perms you want to add for a specific group
                 ['admin'] = {

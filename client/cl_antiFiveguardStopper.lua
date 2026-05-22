@@ -1,5 +1,5 @@
 local data = LoadResourceFile(CurrentResourceName,'config.lua')
-local Config = assert(load(data))()?.AntiStopper
+local Config = assert(load(data))()?.AntiFiveguardStopper
 if not Config?.enable then return end
 while not READY do Citizen.Wait(0) end
 
