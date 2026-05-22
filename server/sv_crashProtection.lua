@@ -124,7 +124,7 @@ end
 
 -- Crash from South Menu May 2026
 if Config.preventSouthMenu then
-    AddEventHandler("entityCreating", function(entity)
+    AddEventHandler('entityCreating', function(entity)
         if GetEntityType(entity) ~= 2 then return end
 
         local owner = NetworkGetEntityOwner(entity)
