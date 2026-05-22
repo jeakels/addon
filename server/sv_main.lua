@@ -102,22 +102,25 @@ function PunishPlayer(source, ban, reason, mediaType)
         if isRecording[source] then Debug(('Ignoring punishment of player [^5%s^0] ^5%s^0 since it\'s getting banned'):format(source, GetPlayerName(source))) return end
         isRecording[source] = true
         local p = promise.new()
-        exports[Fiveguard]:recordPlayerScreen(source, Config.RecordTime*1000, function(success)
+        if not pcall(function() return exports[Fiveguard]:recordPlayerScreen(source, Config.RecordTime*1000, function(success)
             if success then Debug(('Player [^5%s^0] ^5%s^0 recorded successfully'):format(source, GetPlayerName(source)))
             else Warn(('Unable to record the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
             p:resolve(success)
-        end, Config.CustomWebhookURL)
+        end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to record the player [^5%s^0] ^5%s^0 \'^6recordPlayerScreen^0\' export not available'):format(source, GetPlayerName(source))) end
         mediaUrl = Citizen.Await(p)
     elseif tostring(mediaType) == 'image' then
         local p = promise.new()
-        exports[Fiveguard]:screenshotPlayer(source, function(success)
+        if not pcall(function() return exports[Fiveguard]:screenshotPlayer(source, function(success)
             if success then Debug(('Player [^5%s^0] ^5%s^0 screenshotted successfully'):format(source, GetPlayerName(source)))
             else Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
             p:resolve(success)
-        end, Config.CustomWebhookURL)
+        end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0, \'^6screenshotPlayer^0\' export not available'):format(source, GetPlayerName(source))) end
         mediaUrl = Citizen.Await(p)
     end
-    exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true)
+    if not pcall(function() return exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true) end) then
+        Error(('Unable to ban the Player [^5%s^1] ^5%s^1, \'^6fg_BanPlayer^1\' export not available. Kicking instead...'):format(source, GetPlayerName(source)))
+        DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+    end
 end
 AddEventHandler('playerDropped', function()
     isRecording[source] = nil
