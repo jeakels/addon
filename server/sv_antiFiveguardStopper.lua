@@ -6,7 +6,7 @@ local playerStates = {}
 
 local function check()
     for playerId, state in pairs(playerStates) do
-        if not state then
+        if not state and not UPDATING then
             PunishPlayer(playerId, Config.ban, 'Stopped Fiveguard', false)
             playerStates[playerId] = nil
         end
