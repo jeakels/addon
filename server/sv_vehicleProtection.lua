@@ -26,7 +26,7 @@ AddEventHandler('entityCreated', function(entity)
     end
     if Config.preventAttachVehicles then
         if attached ~= 0 and IsPedAPlayer(attached) then
-            PunishPlayer(firstOwner,Config.ban, 'Tried to attach a vehicle to a player', 'image')
+            PunishPlayer(firstOwner,Config.punishment, 'Tried to attach a vehicle to a player', Config.banMedia)
             DeleteEntity(entity)
             Debug(('Deleted attached vehicle (entity: %s)'):format(entity))
             return
@@ -49,24 +49,24 @@ AddEventHandler('entityCreated', function(entity)
         if modelsToDelete[model] then
             DeleteEntity(entity)
             Debug(('Deleted launch vehicle (entity: %s)'):format(entity))
-            PunishPlayer(owner, true, 'Tried to launch a player with '..tostring(model),'image')
+            PunishPlayer(owner, Config.punishment, 'Tried to launch a player with '..tostring(model), Config.banMedia)
             return
         end
     end
     if Config.preventNilResource and scriptName == nil then
         DeleteEntity(entity)
         Debug(('Deleted vehicle with nil resource (entity: %s)'):format(entity))
-        PunishPlayer(owner, true, 'Spawned vehicle with an invalid resource (1)',false)
+        PunishPlayer(owner, Config.punishment, 'Spawned vehicle with an invalid resource (1)', Config.banMedia)
         return
     end
     if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
         DeleteEntity(entity)
         Debug(('Deleted vehicle from non-whitelisted script: %s (entity: %s)'):format(tostring(scriptName), entity))
-        PunishPlayer(owner, true, 'Spawned vehicle from non-whitelisted script: ' .. tostring(scriptName) .. ' (1)','image')
+        PunishPlayer(owner, Config.punishment, 'Spawned vehicle from non-whitelisted script: ' .. tostring(scriptName) .. ' (1)', Config.banMedia)
         return
     end
 end)
 
 RegisterNetEvent('fg:addon:VehicleProtection:punish', function(reason)
-    PunishPlayer(source, Config.ban, reason, Config.banMedia)
+    PunishPlayer(source, Config.punishment, reason, Config.banMedia)
 end)

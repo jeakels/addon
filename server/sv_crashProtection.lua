@@ -10,7 +10,7 @@ if Config.preventLumia then
         local modelprop = GetEntityModel(entity)
         if modelprop == 1885233650 or modelprop == 310817095 then
             CancelEvent()
-            PunishPlayer(src, Config.ban, 'Tried to crash server (Lumia)', Config.banMedia)
+            PunishPlayer(src, Config.punishment, 'Tried to crash server (Lumia)', Config.banMedia)
         end
     end)
 end
@@ -87,7 +87,7 @@ if Config.preventNewCrashMethod then
         if bestId then
             if not _lastPrint[bestId] or (now - _lastPrint[bestId]) > 3000 then
                 _lastPrint[bestId] = now
-                PunishPlayer(bestId, Config.ban, 'Tried to crash server (April 2026 Method)', Config.banMedia)
+                PunishPlayer(bestId, Config.punishment, 'Tried to crash server (April 2026 Method)', Config.banMedia)
             end
         end
         _playerPos[srcId] = nil
@@ -108,12 +108,14 @@ if Config.preventFootIK then
                 local ped = GetPlayerPed(src)
                 if ped and ped > 0 then
                     if lastHandle[src] and math.abs(ped - lastHandle[src]) > 50000 then
-                        PunishPlayer(src, Config.ban, 'Crash Exploit Detected: FootIK_HandleJump ' .. ('Handle: %d → %d'):format(lastHandle[src], ped), Config.banMedia)
+                        PunishPlayer(src, Config.punishment, 'Crash Exploit Detected: FootIK_HandleJump ' .. ('Handle: %d → %d'):format(lastHandle[src], ped), Config.banMedia)
+                        lastHandle[source] = nil
                     end
                     lastHandle[src] = ped
                     if IsPedRagdoll(ped) or GetEntityHealth(ped) == 0 then
                         if NetworkGetEntityOwner(ped) ~= tonumber(src) then
-                            PunishPlayer(src, Config.ban, 'Crash Exploit Detected: FootIK_RagdollSpoof ' .. ('Owner: %d | Src: %s'):format(NetworkGetEntityOwner(ped), src), Config.banMedia)
+                            PunishPlayer(src, Config.punishment, 'Crash Exploit Detected: FootIK_RagdollSpoof ' .. ('Owner: %d | Src: %s'):format(NetworkGetEntityOwner(ped), src), Config.banMedia)
+                            lastHandle[source] = nil
                         end
                     end
                 end

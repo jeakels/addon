@@ -87,17 +87,9 @@ local function checkAndFixFxmanifest()
     return false
 end
 local isRecording = {}
-
-function PunishPlayer(source, ban, reason, mediaType)
-    if not reason then reason= '' end
-    Debug('PunishPlayer',source, ban, reason, mediaType)
-    if not ban then
-        print(('Player kicked [^5%s^0] ^5%s^0 for %s'):format(source, GetPlayerName(source),reason))
-        DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
-        return
-    end
-    if Config.CustomWebhookURL and string.len(Config.CustomWebhookURL) < 80 then Config.CustomWebhookURL = nil end
+local function getMedia(source, mediaType)
     local mediaUrl
+    if Config.CustomWebhookURL and string.len(Config.CustomWebhookURL) < 80 then Config.CustomWebhookURL = nil end
     if tostring(mediaType) == 'video' then
         if isRecording[source] then Debug(('Ignoring punishment of player [^5%s^0] ^5%s^0 since it\'s getting banned'):format(source, GetPlayerName(source))) return end
         isRecording[source] = true
@@ -107,7 +99,8 @@ function PunishPlayer(source, ban, reason, mediaType)
             else Warn(('Unable to record the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
             p:resolve(success)
         end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to record the player [^5%s^0] ^5%s^0 \'^6recordPlayerScreen^0\' export not available'):format(source, GetPlayerName(source))) end
-        mediaUrl = Citizen.Await(p)
+        mediaUrl =  Citizen.Await(p)
+        isRecording[source] = nil
     elseif tostring(mediaType) == 'image' then
         local p = promise.new()
         if not pcall(function() return exports[Fiveguard]:screenshotPlayer(source, function(success)
@@ -115,11 +108,26 @@ function PunishPlayer(source, ban, reason, mediaType)
             else Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
             p:resolve(success)
         end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0, \'^6screenshotPlayer^0\' export not available'):format(source, GetPlayerName(source))) end
-        mediaUrl = Citizen.Await(p)
+        mediaUrl =  Citizen.Await(p)
+        isRecording[source] = nil
     end
-    if not pcall(function() return exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true) end) then
-        Error(('Unable to ban the Player [^5%s^1] ^5%s^1, \'^6fg_BanPlayer^1\' export not available. Kicking instead...'):format(source, GetPlayerName(source)))
-        DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+    return mediaUrl
+end
+
+function PunishPlayer(source, ban, reason, mediaType)
+    if not reason then reason= '' end
+    Debug('PunishPlayer',source, ban, reason, mediaType)
+    local mediaUrl = getMedia(source, mediaType)
+    if ban == 'ban' then
+        if not pcall(function() return exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true) end) then
+            Error(('Unable to ban the Player [^5%s^1] ^5%s^1, \'^6fg_BanPlayer^1\' export not available. Kicking instead for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
+            -- DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+        end
+    elseif ban == 'kick' then
+        print(('[^1PUNISHMENT^0] Kicking [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
+        -- DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+    elseif ban == 'log' then
+        print(('[^1PUNISHMENT^0] Logging [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
     end
 end
 AddEventHandler('playerDropped', function()

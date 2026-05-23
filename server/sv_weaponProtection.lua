@@ -34,7 +34,7 @@ local function CheckWeaponDistance(sender, ev, expectedHash, maxDist, reason, ex
             if DoesEntityExist(victimEnt) then
                 if #(attackerCoords - victimCoords) > maxDist then
                     CancelEvent()
-                    PunishPlayer(sender, true, reason, false)
+                    PunishPlayer(sender, Config.AntiDistanceDamage.punishment, reason, Config.AntiDistanceDamage.banMedia)
                 end
             end
         end
@@ -122,7 +122,7 @@ if Config.AntiGiveWeapon.enable then
         end)
         RegisterNetEvent('fg:addon:registerInitialWeapons', function(initialWeapons)
             if isRegistered[source] then
-                PunishPlayer(source, true, 'Tried to re-register his weapons', 'image')
+                PunishPlayer(source, Config.AntiGiveWeapon.punishment, 'Tried to re-register his weapons', Config.AntiGiveWeapon.banMedia)
                 return
              end
             if not PlayerWeapons[source] then PlayerWeapons[source] = {} end
@@ -165,8 +165,8 @@ if Config.AntiGiveWeapon.enable then
         Debug(('AntiGiveWeapon: [^5%s^0] ^5%s^0 shot with %s that\'s %s'):format(sender or 0, GetPlayerName(sender) or 'unknown', weaponName, (hasWeapon == true and '^2present^0 ' or '^1missing^0 ')..'in inventory'))
         if hasWeapon == false then
             CancelEvent()
-            if Config.AntiGiveWeapon.ban then
-                PunishPlayer(sender, Config.AntiGiveWeapon.ban, ('Give Weapon Detected (Shot with: %s)'):format(weaponName), Config.AntiGiveWeapon.banMedia)
+            if Config.AntiGiveWeapon.punishment then
+                PunishPlayer(sender, Config.AntiGiveWeapon.punishment, ('Give Weapon Detected (Shot with: %s)'):format(weaponName), Config.AntiGiveWeapon.banMedia)
             else
                 local playerPedId = GetPlayerPed(sender)
                 RemoveWeaponFromPed(playerPedId, ev.weaponType)
@@ -179,7 +179,7 @@ if Config.AntiGiveWeaponToPed.enable then
     AddEventHandler('giveWeaponEvent',function (sender,ddata)
         Debug(json.encode(ddata,{indent=true}))
         if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) or not weaponHash[ddata.weaponType] then return end
-        PunishPlayer(sender,Config.AntiGiveWeaponToPed.ban,('Tried to Add %s to player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
+        PunishPlayer(sender,Config.AntiGiveWeaponToPed.punishment,('Tried to Add %s to player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
         CancelEvent()
     end)
 end
@@ -188,13 +188,13 @@ if Config.AntiRemoveWeaponFromPed.enable then
     AddEventHandler('removeWeaponEvent',function (sender,ddata)
         Debug(json.encode(ddata,{indent=true}))
         if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) or not weaponHash[ddata.weaponType] then return end
-        PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.ban,('Tried to remove %s from player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
+        PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.punishment,('Tried to remove %s from player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
         CancelEvent()
     end)
     AddEventHandler('removeAllWeaponsEvent',function (sender,ddata)
         Debug(json.encode(ddata,{indent=true}))
         if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) or not weaponHash[ddata.weaponType] then return end
-        PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.ban,('Tried to remove all weapons from player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
+        PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.punishment,('Tried to remove all weapons from player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
         CancelEvent()
     end)
 end

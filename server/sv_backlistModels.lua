@@ -10,8 +10,7 @@ local function checkModel()
         ---@diagnostic disable-next-line: param-type-mismatch
         local model = GetEntityModel(GetPlayerPed(source))
         if model and Config.blacklist[model] == true then
-            PunishPlayer(source, Config.ban, ('Blacklisted model detected: %s'):format(model), Config.banMedia)
-            break
+            PunishPlayer(source, Config.punishment, ('Blacklisted model detected: %s'):format(model), Config.banMedia)
         end
     end
     Citizen.SetTimeout(Config.checkInterval*1000, checkModel)

@@ -7,16 +7,16 @@ return {
         enable = true -- Automatically restarts fiveguard when an update is installed avoiding downtimes, remember that this can crash players since restarting resources runtime is not reccomended (manual or by scripts or wathever).
     },
     Heartbeat = {
-        enable = true,   -- prevent cheaters to stop client side of this resource
-        joinGrace = 30,  -- Seconds ignored after the player spawned
-        threadTime = 5,  -- Interval between heartbeats (seconds)
-        graceMisses = 3, -- How many consecutive misses are tolerated before punishment
-        tokenExpiry = 10,-- Token expiry time (seconds)
-        ban = false      -- If false player will be kicked
+        enable = true,      -- prevent cheaters to stop client side of this resource
+        joinGrace = 30,     -- Seconds ignored after the player spawned
+        threadTime = 5,     -- Interval between heartbeats (seconds)
+        graceMisses = 3,    -- How many consecutive misses are tolerated before punishment
+        tokenExpiry = 10,   -- Token expiry time (seconds)
+        punishment = 'kick' -- ban/kick/log
     },
     CrashProtection = {
         enable = true,      -- prevent cheaters to crash players
-        ban = true,         -- If false, the player will only be kicked/blocked
+        punishment = 'ban', -- ban/kick/log
         banMedia = 'image', -- 'image', 'video' or 'false'
         preventLumia = true,
         preventPneumaticHammer = true,
@@ -27,8 +27,8 @@ return {
     },
     AntiThrow = {
         enable = true,      -- prevent cheaters to take and launch vehicles
-        ban = true,         -- If false player will be kicked
-        banMedia = 'image', -- 'image' or 'video' or 'false'
+        punishment = 'ban', -- ban/kick/log
+        banMedia = 'image', -- image/video/false
         whitelistedZones = {
             -- { -- EXAMPLE
             --     coords = vector3(0, 0, 0),
@@ -47,21 +47,23 @@ return {
         allowedPattern = '^[A-Za-z0-9_.%-%s]+$' -- Allowed characters, set false to disable
     },
     AntiFiveguardStopper = {
-        enable = true,    -- Detect if someone try to stop fiveguard
-        ban = true,       -- If false player will be kicked
-        checkInterval = 5 -- interval in seconds
+        enable = true,      -- Detect if someone try to stop fiveguard
+        punishment = 'ban', -- ban/kick/log
+        banMedia = 'image', -- image/video/false
+        checkInterval = 5   -- interval in seconds
     },
     AntiPedManipulation = { -- Credit: @somis12
         -- If it gives you false bans, change the "true" below to "false" (enable = true / enable = false).
         -- NOTE: The system will still activate ONLY if onesync_population is disabled.
         enable = true and not GetConvarBool("onesync_population", true),
         maxBucketUsed = 15000,
-        ban = true -- If false player will be kicked
+        punishment = 'ban', -- ban/kick/log
+        banMedia = 'image' -- image/video/false
     },
     VehicleProtection = { -- Credit: @jona0081 for some detections included here
         enable = true,
-        ban = true,         -- Ban (false = delete vehicle only)
-        banMedia = 'image', -- 'image' or 'video' or 'false'
+        punishment = 'log', -- ban/kick/log
+        banMedia = 'image', -- image/video/false
         detectNPC = false,  -- Can spawn client side event
         cleanNotOwnedVehicles = false,
         preventSafeSpawn = {
@@ -109,10 +111,12 @@ return {
         AntiGiveWeapon = { -- Credit: @locutor404 & @somis12
             enable = true,
             relaxed = false,    -- determinate if check every shot or no
-            ban = true,         -- (false = weapon removed only)
-            banMedia = 'image'  -- 'image' or 'video' or 'false'
+            punishment = 'ban', -- ban/kick/log
+            banMedia = 'image'  -- image/video/false
         },
         AntiDistanceDamage = {
+            punishment = 'ban', -- ban/kick/log
+            banMedia = 'image',
             punch = {
                 enable = true,
                 maxDistance = 16
@@ -124,11 +128,11 @@ return {
         },
         AntiGiveWeaponToPed = {
             enable = true,
-            ban = true
+            punishment = 'ban' -- ban/kick/log
         },
         AntiRemoveWeaponFromPed = {
             enable = true,
-            ban = true
+            punishment = 'ban' -- ban/kick/log
         }
     },
     AntiExplosions = {
@@ -136,14 +140,14 @@ return {
         preventExplosions = true, -- Crédit: @jona0081
         preventSafeExplosions = false,
         preventUnnetworkedExplosions = true,
-        ban = true, -- If false player will be kicked
-        banMedia = 'image' -- 'image' or 'video' or 'false'
+        punishment = 'ban', -- ban/kick/log
+        banMedia = 'image' -- image/video/false
     },
     BlacklistedModels = {
         enable = true,
-        ban = true,-- If false player will be kicked
-        banMedia = 'image', -- 'image' or 'video' or 'false'
-        checkInterval = 10, --in seconds
+        punishment = 'ban', -- ban/kick/log
+        banMedia = 'image', -- image/video/false
+        checkInterval = 10, -- in seconds
         blacklist = { -- a list of ped/animal models that player can't use
             [GetHashKey('a_c_fish')] = true,
             [GetHashKey('a_c_boar')] = true,
@@ -182,7 +186,7 @@ return {
         },
     },
     EasyBypass = {
-        enable = true, -- Allows players to get a bypass directly by native execution on installed resources or when a event configured is triggered
+        enable = true,   -- Allows players to get a bypass directly by native execution on installed resources or when a event configured is triggered
         verbose = false, -- if true, prints are more detailed and don't warn if player already have permission
         onClientTrigger = {
             --[[

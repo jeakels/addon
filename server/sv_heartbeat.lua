@@ -68,12 +68,7 @@ local function start(src)
                     Debug(('Heartbeat miss for %s (%d/%d)'):format(src, st.misses, Config.graceMisses))
 
                     if st.misses >= Config.graceMisses then
-                        PunishPlayer(
-                            src,
-                            Config.ban,
-                            ('Heartbeat failed (%d misses)'):format(st.misses),
-                            false
-                        )
+                        PunishPlayer(src, Config.punishment, ('Heartbeat failed (%d misses)'):format(st.misses), false)
                         break
                     end
                 end

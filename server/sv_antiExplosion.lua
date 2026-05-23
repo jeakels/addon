@@ -17,16 +17,16 @@ Debug('[explosionEvent] Received from player: ' .. tostring(source) .. '\n' ..
 
     if Config.preventExplosions and (ev.explosionType == 9 and ev.damageScale == 1 and ev.cameraShake == 1 and ev.isNetworked == nil and ev.explosionFX == nil) then
         CancelEvent()
-        return PunishPlayer(sender, Config.ban, 'Detected Explosions', Config.banMedia)
+        return PunishPlayer(sender, Config.punishment, 'Detected Explosions', Config.banMedia)
     end
 
     if Config.preventSafeExplosions and (ev.explosionType == 7 and ev.damageScale == 1 and ev.cameraShake >= 0.6 and (ev.ownerNetId == 1 or ev.ownerNetId == 0) and ev.isNetworked == nil and ev.explosionFX == nil) then
         CancelEvent()
-        return PunishPlayer(sender, Config.ban, 'Detected Safe Explosions', Config.banMedia)
+        return PunishPlayer(sender, Config.punishment, 'Detected Safe Explosions', Config.banMedia)
     end
 
     if Config.preventUnnetworkedExplosions and (ev.explosionType == 7 and ev.f104 == 0) then --thanks to @somis12
         CancelEvent()
-        return PunishPlayer(sender, Config.ban, 'Detected Unnetworked Explosions', Config.banMedia)
+        return PunishPlayer(sender, Config.punishment, 'Detected Unnetworked Explosions', Config.banMedia)
     end
 end)
