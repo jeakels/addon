@@ -87,6 +87,7 @@ if Config.preventSafeSpawn.enable then
                     if not inWhitelistZone then
                         DeleteEntity(veh)
                         Debug('[AntiSafeSpawn] Deleted vehicle', veh)
+                        TriggerServerEvent('fg:addon:VehicleProtection:punish','Safe spawned a vehicle')
                     end
                 end
             end
