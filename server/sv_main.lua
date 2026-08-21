@@ -121,11 +121,11 @@ function PunishPlayer(source, ban, reason, mediaType)
     if ban == 'ban' then
         if not pcall(function() return exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true) end) then
             Error(('Unable to ban the Player [^5%s^1] ^5%s^1, \'^6fg_BanPlayer^1\' export not available. Kicking instead for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
-            -- DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+            DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
         end
     elseif ban == 'kick' then
         print(('[^1PUNISHMENT^0] Kicking [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
-        -- DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+        DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
     elseif ban == 'log' then
         print(('[^1PUNISHMENT^0] Logging [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
     end
