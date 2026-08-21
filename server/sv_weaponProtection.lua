@@ -66,23 +66,19 @@ if Config.AntiGiveWeapon.enable then
         frameworkDetected = 'ESX'
         local ESX = exports.es_extended:getSharedObject()
         HasWeapon = function(source, weaponName)
-            local xPlayer = ESX.GetPlayerFromId(source)
-            if not xPlayer then
-                Warn(('Player [^5%s^0] ^5%s^0 is not loaded'):format(source, GetPlayerName(source)))
-                return
-            end
-            return xPlayer.hasItem(weaponName).count >= 1
+            local ok, err, hasItem = pcall(function () return '', ESX.GetPlayerFromId(source)?.hasItem(weaponName)?.count >= 1 end)
+            if not ok then Error('Failed to get player data from ESX!\n',err) return end
+            return hasItem
         end
     elseif not frameworkDetected and checkResource('qbx_core') then
         frameworkDetected = 'QBox'
         HasWeapon = function(source, weaponName)
-            local Player = exports.qbx_core:GetPlayer(source)
-            if not Player then Warn(('Player [^5%s^0] ^5%s^0 is not loaded'):format(source, GetPlayerName(source))) return end
-            local ok, hasItem = pcall(function () return Player.PlayerData?.items?[weaponName]?.amount >= 1 end)
+            local ok, err, hasItem = pcall(function () return '', exports.qbx_core:GetPlayer(source).PlayerData?.items?[weaponName]?.amount >= 1 end)
             if not ok then
-                Warn('Couldn\'t get items from GetPlayer, retrying with ox_inventory instead...')
+                Warn('Couldn\'t get items from PlayerData, retrying with ox_inventory instead...')
                 if not checkResource('ox_inventory') then Warn('Couldn\'t find ox_inventory to check weapon on QBox') return end
-                hasItem = exports.ox_inventory:GetItemCount(source, weaponName) >= 1
+                ok, err, hasItem = pcall(function () return '', exports.ox_inventory:GetItemCount(source, weaponName) >= 1 end)
+                if not ok then Error('Failed to get item count from ox_inventory!') return end
             end
             return hasItem
         end
@@ -90,12 +86,13 @@ if Config.AntiGiveWeapon.enable then
         frameworkDetected = 'QBCore'
         local QBCore = exports['qb-core']:GetCoreObject()
         HasWeapon = function(source, weaponName)
-            local Player = QBCore.Functions.GetPlayer(source)
-            if not Player then
-                Warn(('Player [^5%s^0] ^5%s^0 is not loaded'):format(source, GetPlayerName(source)))
-                return
+            local ok, err, hasItem = pcall(function () return '', QBCore.Functions.GetPlayer(source).Functions?.GetItemByName(weaponName) end)
+            if not ok then
+                Warn('Couldn\'t get items from PlayerData, retrying with qb-inventory instead...')
+                if not checkResource('qb-inventory') then Warn('Couldn\'t find qb-inventory to check weapon on QBox') return end
+                hasItem = exports['qb-inventory']:GetItemCount(source, weaponName) >= 1
             end
-            return Player.Functions.GetItemByName(weaponName) and true or false
+            return hasItem
         end
     elseif not frameworkDetected and checkResource('vrp') then
         frameworkDetected = 'vRP'
