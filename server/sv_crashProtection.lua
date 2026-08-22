@@ -8,7 +8,7 @@ if Config.preventLumia then
     local vehicleStates = {}
 
     local function flag(src, reason, veh)
-        PunishPlayer(src, Config.punishment, reason, 'log')
+        PunishPlayer(src, Config.punishment, reason, Config.banMedia)
         vehicleStates[veh] = nil
         if DoesEntityExist(veh) then
             DeleteEntity(veh)
