@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
-version '1.6.1'
+version '1.6.2'
 lua54 'yes'
 addon 'yes'
 
