@@ -21,9 +21,11 @@ return {
         preventLumia = true,
         preventPneumaticHammer = true,
         preventTableGolfSummer = true,
-        preventNewCrashMethod = true,
-        preventFootIK = true,
-        preventSouthMenu = true
+        swapWeaponExploit = true,
+        handleJumpExploit = true,
+        ragdollSpoofExploit = true,
+        heliPassengerRappelExploit = true,
+        vehicleOwnerExploit = true
     },
     AntiThrow = {
         enable = true,      -- prevent cheaters to take and launch vehicles

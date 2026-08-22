@@ -109,7 +109,7 @@ do
                 if not srcId then goto continue end
                 local ped = GetPlayerPed(srcId)
                 if ped ~= 0 and DoesEntityExist(ped) then
-                    if true then
+                    if Config.heliPassengerRappelExploit then
                         local vehicle = GetVehiclePedIsIn(ped, false)
                         if vehicle ~= 0 and DoesEntityExist(vehicle) then
                             if GetVehicleType(vehicle) ~= 'heli' then
@@ -124,20 +124,24 @@ do
                             end
                         end
                     end
-                    if Config.preventFootIK then
+                    if Config.handleJumpExploit then
                         if lastHandle[srcId] and math.abs(ped - lastHandle[srcId]) > 50000 then
-                            PunishPlayer(srcId, Config.punishment, 'Crash Exploit Detected: FootIK_HandleJump ' .. ('Handle: %d → %d'):format(lastHandle[srcId], ped), Config.banMedia)
+                            PunishPlayer(srcId, Config.punishment, 'Crash Exploit Detected: HandleJump' .. ('Handle: %d → %d'):format(lastHandle[srcId], ped), Config.banMedia)
                             lastHandle[srcId] = nil
+                            goto continue
                         end
                         lastHandle[srcId] = ped
+                    end
+                    if Config.ragdollSpoofExploit then
                         if IsPedRagdoll(ped) or GetEntityHealth(ped) == 0 then
                             if NetworkGetEntityOwner(ped) ~= srcId then
-                                PunishPlayer(srcId, Config.punishment, 'Crash Exploit Detected: FootIK_RagdollSpoof ' .. ('Owner: %d | Src: %s'):format(NetworkGetEntityOwner(ped), srcId), Config.banMedia)
+                                PunishPlayer(srcId, Config.punishment, 'Crash Exploit Detected: RagdollSpoof ' .. ('Owner: %d | Src: %s'):format(NetworkGetEntityOwner(ped), srcId), Config.banMedia)
                                 lastHandle[srcId] = nil
+                                goto continue
                             end
                         end
                     end
-                    if Config.preventNewCrashMethod then
+                    if Config.swapWeaponExploit then
                         local coords = GetEntityCoords(ped)
                         _playerPos[srcId] = coords
                         local taskType = GetPedSpecificTaskType(ped, 0)
@@ -156,7 +160,7 @@ do
             Citizen.Wait(250)
         end
     end)
-    if Config.preventNewCrashMethod then
+    if Config.swapWeaponExploit then
         AddEventHandler('playerDropped', function(reason)
             local srcId = source
             local victimCoords = _playerPos[srcId]
@@ -203,7 +207,7 @@ do
 end
 
 -- Crash from South Menu May 2026
-if Config.preventSouthMenu then
+if Config.vehicleOwnerExploit then
     AddEventHandler('entityCreating', function(entity)
         if GetEntityType(entity) ~= 2 then return end
 
@@ -213,7 +217,7 @@ if Config.preventSouthMenu then
         local coords = GetEntityCoords(entity)
         if coords and (coords.x ~= coords.x or math.abs(coords.x) > 15000) then
             CancelEvent()
-            print('[FIVEGUARD] Blocked corrupted coords from src:' .. owner)
+            PunishPlayer(owner,Config.punishment,'Blocked corrupted coords')
             return
         end
 
@@ -227,7 +231,7 @@ if Config.preventSouthMenu then
                     local vehicleOwnerPed = GetPlayerPed(owner)
                     if driver ~= driverPlayerPed and driver ~= vehicleOwnerPed then
                         CancelEvent()
-                        print('[FIVEGUARD] Blocked corrupted driver from src:' .. owner)
+                        PunishPlayer(owner,Config.punishment,'Blocked corrupted driver')
                         return
                     end
                 end
