@@ -3,6 +3,16 @@ local Config = assert(load(data))()?.AntiThrow
 if not Config?.enable then return end
 while not READY do Citizen.Wait(0) end
 
+local function isWhitelistedZone(ped)
+    local playerCoords = GetEntityCoords(ped)
+    for i = 1, #Config.whitelistedZones do
+        if #(playerCoords - Config.whitelistedZones[i].coords) < Config.whitelistedZones[i].radius then
+            return true
+        end
+    end
+    return false
+end
+
 local function checkThrow ()
     local pedToSrc = {}
     for _, src in ipairs(GetPlayers()) do
@@ -15,7 +25,7 @@ local function checkThrow ()
         if DoesEntityExist(veh) then
             local attachedTo = GetEntityAttachedTo(veh)
             local src = pedToSrc[attachedTo]
-            if src and GetPedInVehicleSeat(veh, -1) ~= attachedTo then
+            if src and GetPedInVehicleSeat(veh, -1) ~= attachedTo and not isWhitelistedZone(attachedTo) then
                 PunishPlayer(src, Config.punishment, 'Tried to throw a vehicle (2)', Config.banMedia)
             end
         end
