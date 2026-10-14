@@ -3,66 +3,44 @@ local Config = assert(load(data))()?.VehicleProtection
 if not Config?.enable then return end
 while not READY do Citizen.Wait(0) end
 
-local function getVehiclesInArea(coords, radius)
-    local vehicles = {}
-    local handle, vehicle = FindFirstVehicle()
-    local success
-
-    repeat
-        if DoesEntityExist(vehicle) then
-            local vehicleCoords = GetEntityCoords(vehicle)
-            if #(coords - vehicleCoords) <= radius then
-                vehicles[#vehicles + 1] = vehicle
-            end
-        end
-        success, vehicle = FindNextVehicle(handle)
-    until not success
-
-    EndFindVehicle(handle)
-    return vehicles
-end
-
 local function isVehicleValid(vehicle)
-    local netId = NetworkGetNetworkIdFromEntity(vehicle)
-    local owner = NetworkGetEntityOwner(vehicle)
-    local scriptName = GetEntityScript(vehicle)
-    if Config.preventUnNetworkedEntity and (not netId or netId == 0) then
-        return false, 'Vehicle with Invalid net id'
+    if Config.preventUnNetworkedEntity then
+        local netId = NetworkGetNetworkIdFromEntity(vehicle)
+        if not netId or netId == 0 then
+            return false, 'Vehicle with Invalid net id'
+        end
     end
-    if Config.preventInvalidOwner and (not owner or owner == -1) then
-        return false, 'Vehicle with Invalid Owner'
+    if Config.preventInvalidOwner then
+        local owner = NetworkGetEntityOwner(vehicle)
+        if not owner or owner == -1 then
+            return false, 'Vehicle with Invalid Owner'
+        end
     end
-    if Config.preventNilResource and scriptName == nil then
-        return false, 'Vehicle with an invalid resource (2)'
-    end
-    if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
-        return false, 'Vehicle from non-whitelisted script: ' .. tostring(scriptName) .. ' (2)'
+    if Config.preventNilResource or Config.preventUnauthorizedResource.enable then
+        local scriptName = GetEntityScript(vehicle)
+        if Config.preventNilResource and scriptName == nil then
+            return false, 'Vehicle with an invalid resource (2)'
+        end
+        if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
+            return false, 'Vehicle from non-whitelisted script: ' .. tostring(scriptName) .. ' (2)'
+        end
     end
     return true
 end
 
-local trackedVehicles = {}
 local function check()
     local playerPed = PlayerPedId()
     local playerCoords = GetEntityCoords(playerPed)
-    local nearbyVehicles = getVehiclesInArea(playerCoords, Config.maxVehicleCheckDistance)
-    for i=1, #nearbyVehicles do
-        local vehicle = nearbyVehicles[i]
-        if not trackedVehicles[vehicle] then
+    for _, vehicle in ipairs(GetGamePool('CVehicle')) do
+        if DoesEntityExist(vehicle)
+            and #(playerCoords - GetEntityCoords(vehicle)) <= Config.maxVehicleCheckDistance then
             local isValid, reason = isVehicleValid(vehicle)
 
             if not isValid then
                 DeleteEntity(vehicle)
                 Debug(('[VehicleProtection] Deleted vehicle %s for reason: %s'):format(vehicle, reason))
                 TriggerServerEvent('fg:addon:VehicleProtection:punish', reason)
-            else
-                trackedVehicles[vehicle] = true
             end
-        end
-    end
-    for vehicle in pairs(trackedVehicles) do
-        if not DoesEntityExist(vehicle) then
-            trackedVehicles[vehicle] = nil
         end
     end
     Citizen.SetTimeout(Config.checkInterval * 1000,check)
