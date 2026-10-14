@@ -15,7 +15,7 @@ do
             local invokingResource = GetInvokingResource()
             if not invokingResource then return end
             local args = { ... }
-            local value = v.booleanArgIndex and args[v.booleanArgIndex] or args[1]
+            local value = v.booleanArgIndex ~= nil and args[v.booleanArgIndex] or args[1]
             TriggerServerEvent('fg:addon:onClientTrigger', startEvent, invokingResource, value)
         end)
         ::skipStartEvent::
