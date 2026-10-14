@@ -15,11 +15,9 @@ end
 ---@param expectedHash number
 ---@param maxDist number
 ---@param reason string
----@param extraCond? fun(ev: table): boolean
-local function CheckWeaponDistance(sender, ev, expectedHash, maxDist, reason, extraCond)
+local function CheckWeaponDistance(sender, ev, expectedHash, maxDist, reason)
     local w = tonumber(ev.weaponType)
     if not w or w ~= expectedHash then return end
-    if extraCond and not extraCond(ev) then return end
 
     local attackerPed = GetPlayerPed(sender)
     if attackerPed == 0 then return end
@@ -30,8 +28,8 @@ local function CheckWeaponDistance(sender, ev, expectedHash, maxDist, reason, ex
     for _, netId in ipairs(victims) do
         if netId and netId ~= 0 then
             local victimEnt = NetworkGetEntityFromNetworkId(netId)
-            local victimCoords = GetEntityCoords(victimEnt)
             if DoesEntityExist(victimEnt) then
+                local victimCoords = GetEntityCoords(victimEnt)
                 if #(attackerCoords - victimCoords) > maxDist then
                     CancelEvent()
                     PunishPlayer(sender, Config.AntiDistanceDamage.punishment, reason, Config.AntiDistanceDamage.banMedia)
@@ -45,9 +43,6 @@ end
 if Config.AntiDistanceDamage.punch.enable then
     AddEventHandler('weaponDamageEvent', function(sender, ev)
         CheckWeaponDistance(sender, ev, 2725352035, Config.AntiDistanceDamage.punch.maxDistance, 'Punch Distance Exceeded (1)')
-        CheckWeaponDistance(sender, ev, 2725352035, Config.AntiDistanceDamage.punch.maxDistance, 'Punch Distance Exceeded (2)', function(r)
-            return r.weaponDamage == 0
-        end)
     end)
 end
 if Config.AntiDistanceDamage.stungun.enable then
@@ -159,7 +154,6 @@ if Config.AntiGiveWeapon.enable then
             coolDown[sender] = now + 3000
         end
         local hasWeapon = HasWeapon(sender, weaponName)
-        Debug(('AntiGiveWeapon: [^5%s^0] ^5%s^0 shot with %s that\'s %s'):format(sender or 0, GetPlayerName(sender) or 'unknown', weaponName, (hasWeapon == true and '^2present^0 ' or '^1missing^0 ')..'in inventory'))
         if hasWeapon == false then
             CancelEvent()
             if Config.AntiGiveWeapon.punishment then
@@ -169,30 +163,7 @@ if Config.AntiGiveWeapon.enable then
                 RemoveWeaponFromPed(playerPedId, ev.weaponType)
             end
         end
-    end)
-end
-
-if Config.AntiGiveWeaponToPed.enable then
-    AddEventHandler('giveWeaponEvent',function (sender,ddata)
-        Debug(json.encode(ddata,{indent=true}))
-        if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) or not weaponHash[ddata.weaponType] then return end
-        PunishPlayer(sender,Config.AntiGiveWeaponToPed.punishment,('Tried to Add %s to player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
-        CancelEvent()
-    end)
-end
-
-if Config.AntiRemoveWeaponFromPed.enable then
-    AddEventHandler('removeWeaponEvent',function (sender,ddata)
-        Debug(json.encode(ddata,{indent=true}))
-        if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) or not weaponHash[ddata.weaponType] then return end
-        PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.punishment,('Tried to remove %s from player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
-        CancelEvent()
-    end)
-    AddEventHandler('removeAllWeaponsEvent',function (sender,ddata)
-        Debug(json.encode(ddata,{indent=true}))
-        if not IsPedAPlayer(NetworkGetEntityFromNetworkId(ddata.pedId)) or not weaponHash[ddata.weaponType] then return end
-        PunishPlayer(sender,Config.AntiRemoveWeaponFromPed.punishment,('Tried to remove all weapons from player %s'):format(weaponHash[ddata.weaponType],NetworkGetEntityOwner(NetworkGetEntityFromNetworkId(ddata.pedId))),false)
-        CancelEvent()
+        Debug(('AntiGiveWeapon: [^5%s^0] ^5%s^0 shot with %s that\'s %s'):format(sender or 0, GetPlayerName(sender) or 'unknown', weaponName, (hasWeapon == true and '^2present^0 ' or '^1missing^0 ')..'in inventory'))
     end)
 end
 
