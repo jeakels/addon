@@ -308,7 +308,7 @@ elseif Config.FrameworkPermissions.enable then
             else
                 Warn('Make sure to config \'Config.FrameworkPermissions.customFramework.invokerResource\' for you custom framework, without it the event can be exploitable by cheaters!')
             end
-            if not (playerId and group and allow) then
+            if not (playerId and group and allow~=nil) then
                 return Error('[Framework Permission] Bad config for custom framework')
             end
             SetPermission(playerId, group, allow)
@@ -343,7 +343,7 @@ elseif Config.txAdminPermissions.enable then
     Info('Easy Permissions: using txAdmin Permissions')
     for i = 1, #Config.txAdminPermissions.fgPermissions do
         if IsPrincipalAceAllowed('fg.txadmin', Config.txAdminPermissions.fgPermissions[i]) then
-            Warn(('[txAdmin Permissions] Ignored permission %s for group fg.txadmin because is already registered'):format(Config.fgPermissions[i]))
+            Warn(('[txAdmin Permissions] Ignored permission %s for group fg.txadmin because is already registered'):format(Config.txAdminPermissions.fgPermissions[i]))
         else
             ExecuteCommand(('add_ace fg.txadmin %s allow'):format(Config.txAdminPermissions.fgPermissions[i]))
         end
