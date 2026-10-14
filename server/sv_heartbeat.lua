@@ -14,17 +14,16 @@ local function start(src)
     if sessions[src] then return end
 
     Debug('Registering player '..src..' for heartbeat')
-    sessions[src] = {
+    local st = {
         spawnedAt = nil,
         seenPong = false,
         token = nil,
         pending = nil,
         misses = 0
     }
+    sessions[src] = st
 
     Citizen.CreateThread(function()
-        local st = sessions[src]
-
         while sessions[src] == st and DoesPlayerExist(src) do
             local ped = GetPlayerPed(src)
             if not ped or ped == 0 then
@@ -75,7 +74,9 @@ local function start(src)
                 Citizen.Wait((Config.threadTime * 1000) + math.random(0, 1500))
             end
         end
-        sessions[src] = nil
+        if sessions[src] == st then
+            sessions[src] = nil
+        end
     end)
 end
 
