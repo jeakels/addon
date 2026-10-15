@@ -39,11 +39,11 @@ if IsDuplicityVersion() then
         local source = NetworkGetEntityOwner(...)
         if not pcall(function ()
             return exports[Addon]:SafeSetEntityCoords(source, true, resourceName)
-        end) then print('[^3WARN^0] EasyBypass is disabled^0') end
+        end) then print('[^3WARN^0] easyBypass is disabled^0') end
         Citizen.SetTimeout(1000,function ()
             if not pcall(function ()
                 return exports[Addon]:SafeSetEntityCoords(source, false, resourceName)
-            end) then print('[^3WARN^0] EasyBypass is disabled^0') end
+            end) then print('[^3WARN^0] easyBypass is disabled^0') end
         end)
         return setEntityCoords(...)
     end
@@ -52,7 +52,7 @@ if IsDuplicityVersion() then
         local source = NetworkGetEntityOwner(entity)
         if not pcall(function ()
             return exports[Addon]:SafeSetEntityVisible(source, not toggle, resourceName)
-        end) then print('[^3WARN^0] EasyBypass is disabled^0') end
+        end) then print('[^3WARN^0] easyBypass is disabled^0') end
         return setEntityVisible(...)
     end
     local variations = {}
@@ -74,13 +74,13 @@ if IsDuplicityVersion() then
             local ok = pcall(function()
                 return exports[Addon]:SafeSetSetPedComponentVariation(source, true, resourceName)
             end)
-            if not ok then print('[^3WARN^0] EasyBypass is disabled^0') end
+            if not ok then print('[^3WARN^0] easyBypass is disabled^0') end
             Citizen.SetTimeout(2000, function()
                 if snooze[source] == a_snooze then
                     local ok = pcall(function()
                         return exports[Addon]:SafeSetSetPedComponentVariation(source, false, resourceName)
                     end)
-                    if not ok then print('[^3WARN^0] EasyBypass is disabled^0') end
+                    if not ok then print('[^3WARN^0] easyBypass is disabled^0') end
                     snooze[source] = nil
                 end
             end)
