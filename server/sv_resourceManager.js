@@ -282,11 +282,9 @@ function fivemMode() {
           }
         });
       } catch (err) {
-        if (err.message.includes('Access to this API has been restricted. Use --allow-child-process to manage permissions.')) {
-            console.log(`\x1b[31mError: Add \x1b[0madd_unsafe_child_process_permission ${currentResource}\x1b[31m to your server.cfg before starting this resource!\x1b[0m`);
-        } else console.log(`\x1b[31mError: ${err.message}\x1b[0m`);
-          resolve(false);
-          return;
+        console.log(`\x1b[31mError: ${err.message}\x1b[0m`);
+        resolve(false);
+        return;
       }
     });
   }
