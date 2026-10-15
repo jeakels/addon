@@ -1,7 +1,3 @@
-local data = LoadResourceFile(CurrentResourceName, 'config.lua')
-local Config = assert(load(data))()?.FiveguardUpdateEnsurer
-if not Config?.enable then return end
-while not READY do Citizen.Wait(0) end
 UPDATING = false
 AddEventHandler('fg:NewUpdate', function(ov, nv)
     if GetInvokingResource() ~= Fiveguard then return end
@@ -12,6 +8,7 @@ AddEventHandler('fg:NewUpdate', function(ov, nv)
     repeat
         if i > 1 then Warn('Seems like Fiveguard (^3'..Fiveguard..'^0) is started but not ready yet, checking again... (attempt: '..i..')^0') end
         ExecuteCommand('refresh')
+        Citizen.Wait(250)
         ExecuteCommand('ensure '..Fiveguard)
         Citizen.Wait(2000*i)
         i += 1
@@ -25,3 +22,5 @@ AddEventHandler('fg:NewUpdate', function(ov, nv)
     Citizen.Wait(5000)
     UPDATING = false
 end)
+
+return true
