@@ -17,26 +17,23 @@ This resource extends **Fiveguard** by allowing you to manage permissions, bypas
 ## 📥 Installation
 1. [Download](https://github.com/jeakels/addon/releases/latest/download/addon.zip) the script
 2. Configure the `config.lua` file as needed
-3. Check the [documentation](https://gabjeksuper.gitbook.io/fiveguard-configuration/addon/package-addon) for further information and help if needed
+3. Add it to your server.cfg and restart the server
+4. Check the [documentation](https://gabjeksuper.gitbook.io/fiveguard-configuration/addon/package-addon) for further information and help if needed
 ---
 ## ⚙️ Main Features
 ### 🔒 Permissions Management
 Supports:
-* **Ace Permissions** (FiveM native)
-* **Framework Permissions** (ESX, QBCore, QBox, vRP – also custom)
-* **txAdmin** (automatic permissions for admins)
+* **Ace** (FiveM native permission system using server.cfg)
+* **txAdmin** (txAdmin admins)
+* **Discord** (users by Discord IDs or guild roles)
+* **Frameworks** (ESX, QBCore, QBox, vRP and custom frameworks)
 ---
 ### 🚨 Security Systems
 * **Heartbeat** → prevents client-side stop attempts
 * **Crash Protection** → prevents cheaters from crashing players by blocking specific known exploits
 * **Anti Stopper** → prevents resource stopping exploits
-* **Anti Carry** → blocks carry exploit (safe zones supported)
-* **Anti Ped Manipulation** → prevents ped manipulation
 * **Anti Safe Spawn** → safe vehicle spawn checks
-* **Anti Spawn Vehicle** → prevents unauthorized spawns (resource whitelist)
 * **Weapon Protection** → AntiGiveWeapon & AntiDistanceDamage (range check)
-* **Anti Explosions** → blocks unauthorized explosions
-* **Blacklisted Models** → prevents banned ped/animal models
 ---
 ### 🔰 Anti XSS Injection
 Protects against script injection, install in a resource with:
@@ -57,8 +54,7 @@ Preconfigured for:
 ### 🧰 Natives with integrated bypass
 * `exports['addon']:SafeSetEntityCoords` → replaces `SetEntityCoords`
 * `exports['addon']:SafeSetEntityVisible` → replaces `SetEntityVisible`
-or using the commands:
-* `fga help` → shows available commands
+or installing directly in the resource using the command:
 * `fga bypass-native [install/uninstall] [resourceName]`
 ---
 ### ⛔ Ban Management
@@ -67,14 +63,15 @@ Manage bans directly with Fiveguard Addon commands:
 * `fga unban range [minId - maxId]` → unban a specific range of IDs
 ---
 ### 📜 Nickname Management
-* Maximum length (default: 25)
+* Minimum and maximum length
 * Configurable allowed characters
 ---
 ### 📡 Logging with Media Evidence
 * **Discord Webhook** support (screenshots or video proofs)
-* Configurable `RecordTime` (default: 5s)
+* Configurable `RecordTime`
 ---
 ## 🙌 Credits
 Addon developed by **Jeakels** with the support of the community and powered by fiveguard, the best anticheat in the market!
-* 🌐 [fiveguard.net](https://fiveguard.net)
+* 🌐 [fiveguard Site](https://fiveguard.net)
 * 💬 [Fiveguard Discord](https://discord.gg/fiveguard)
+* 💬 [Fiveguard Documentation](https://docs.fiveguard.net)
