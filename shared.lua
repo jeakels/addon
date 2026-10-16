@@ -1,23 +1,83 @@
 CurrentResourceName = GetCurrentResourceName()
 Resources = {}
-local data = LoadResourceFile(CurrentResourceName,'config.lua')
-local Config = assert(load(data))()
-local d_registered = false
+local isServer = IsDuplicityVersion()
+local Config
+
+function GetConfig(section)
+    while not Config do Citizen.Wait(0) end
+    if section then return Config[section] end
+    return Config
+end
+
+if isServer then
+    local data = LoadResourceFile(CurrentResourceName, 'config.lua')
+    Config = assert(load(data))()
+
+    local clientConfig = {
+        Debug = Config.Debug,
+        heartbeat = { enable = Config.heartbeat.enable },
+        antiFiveguardStopper = {
+            enable = Config.antiFiveguardStopper.enable,
+            checkInterval = Config.antiFiveguardStopper.checkInterval
+        },
+        easyBypass = {
+            enable = Config.easyBypass.enable,
+            onClientTrigger = Config.easyBypass.onClientTrigger
+        },
+        weaponProtection = {
+            enable = Config.weaponProtection.enable,
+            inventorySync = Config.weaponProtection.inventorySync
+        },
+        vehicleProtection = {
+            enable = Config.vehicleProtection.enable,
+            preventUnNetworkedEntity = Config.vehicleProtection.preventUnNetworkedEntity,
+            preventInvalidOwner = Config.vehicleProtection.preventInvalidOwner,
+            preventNilResource = Config.vehicleProtection.preventNilResource,
+            maxVehicleCheckDistance = Config.vehicleProtection.maxVehicleCheckDistance,
+            checkInterval = Config.vehicleProtection.checkInterval,
+            preventSafeSpawn = {
+                enable = Config.vehicleProtection.preventSafeSpawn.enable,
+                whitelistedCoords = Config.vehicleProtection.preventSafeSpawn.whitelistedCoords
+            }
+        }
+    }
+    local lastRequest = {}
+    RegisterNetEvent('fg:addon:askConfig', function()
+        local player = source
+        if player <= 0 then return end
+        local now = GetGameTimer()
+        if lastRequest[player] and now - lastRequest[player] < 1000 then return end
+        lastRequest[player] = now
+        TriggerClientEvent('fg:addon:getConfig', player, clientConfig)
+    end)
+    AddEventHandler('playerDropped', function()
+        lastRequest[source] = nil
+    end)
+    if Config.Debug then
+        RegisterNetEvent('fg:addon:debug', function(...)
+            print('[^5DEBUG-CLIENT-'..source..'^0]', ...)
+        end)
+    end
+else
+    local p=promise.new()
+    RegisterNetEvent('fg:addon:getConfig', function(data)
+        if source ~= 65535 then return end
+        if Config or type(data) ~= 'table' then return end
+        p:resolve(data)
+    end)
+    TriggerServerEvent('fg:addon:askConfig')
+    Config = Citizen.Await(p)
+end
+
 ---@param ... any
 function Debug(...)
-    if Config.Debug then
-        if IsDuplicityVersion() then
-            print('[^5DEBUG^0]',...)
-        else
-            TriggerServerEvent('fg:addon:debug', ...)
-        end
+    if not GetConfig().Debug then return end
+    if isServer then
+        print('[^5DEBUG-SERVER^0]', ...)
+    else
+        print('[^5DEBUG-CLIENT^0]', ...)
+        TriggerServerEvent('fg:addon:debug', ...)
     end
-end
-if Config.Debug and not d_registered then
-    RegisterNetEvent('fg:addon:debug', function(...)
-        print('[^5DEBUG-CLIENT^0]', source, ...)
-    end)
-    d_registered = true
 end
 ---@param ... any
 function Error(...)
