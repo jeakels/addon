@@ -129,14 +129,14 @@ end
 local banning = {}
 local function getMedia(source, mediaType)
     local mediaUrl
-    if Config.CustomWebhookURL and string.len(Config.CustomWebhookURL) < 80 then Config.CustomWebhookURL = nil end
+    if Config.CustomMediaWebhookURL and string.len(Config.CustomMediaWebhookURL) < 80 then Config.CustomMediaWebhookURL = nil end
     if tostring(mediaType) == 'video' then
         local p = promise.new()
         if not pcall(function() return exports[Fiveguard]:recordPlayerScreen(source, Config.RecordTime*1000, function(success)
             if success then Debug(('Player [^5%s^0] ^5%s^0 recorded successfully'):format(source, GetPlayerName(source)))
             else Warn(('Unable to record the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
             p:resolve(success)
-        end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to record the player [^5%s^0] ^5%s^0 \'^6recordPlayerScreen^0\' export not available'):format(source, GetPlayerName(source))) end
+        end, Config.CustomMediaWebhookURL) end) then p:resolve(); Warn(('Unable to record the player [^5%s^0] ^5%s^0 \'^6recordPlayerScreen^0\' export not available'):format(source, GetPlayerName(source))) end
         mediaUrl =  Citizen.Await(p)
     elseif tostring(mediaType) == 'image' then
         local p = promise.new()
@@ -144,7 +144,7 @@ local function getMedia(source, mediaType)
             if success then Debug(('Player [^5%s^0] ^5%s^0 screenshotted successfully'):format(source, GetPlayerName(source)))
             else Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0'):format(source, GetPlayerName(source))) end
             p:resolve(success)
-        end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0, \'^6screenshotPlayer^0\' export not available'):format(source, GetPlayerName(source))) end
+        end, Config.CustomMediaWebhookURL) end) then p:resolve(); Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0, \'^6screenshotPlayer^0\' export not available'):format(source, GetPlayerName(source))) end
         mediaUrl =  Citizen.Await(p)
     end
     return mediaUrl
