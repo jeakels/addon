@@ -1,15 +1,12 @@
-local data = LoadResourceFile(CurrentResourceName,'config.lua')
-local Config = assert(load(data))()?.EasyBypass
-if not Config.enable then return end
-while not READY do Citizen.Wait(0) end
 local R_EVENTS = {}
+local initializationError
 
 do
     for startEvent, v in pairs(Config.onClientTrigger) do
-        if type(v) ~= 'table' then Error('Can\'t load bypasses config'); goto continue end
+        if type(v) ~= 'table' then initializationError = 'Invalid bypass configuration for event: ' .. tostring(startEvent); Error(initializationError); goto continue end
         if not v.enable then goto continue end
         if not startEvent or not v.bypass then goto continue end
-        if v.endEvent == nil then Error('Missing endEvent for client bypass event: ' .. startEvent); goto continue end
+        if v.endEvent == nil then initializationError = 'Missing endEvent for client bypass event: ' .. tostring(startEvent); Error(initializationError); goto continue end
         if R_EVENTS[startEvent] then Warn(('Event %s is already registered'):format(startEvent)); goto skipStartEvent end
         R_EVENTS[startEvent] = AddEventHandler(startEvent, function(...)
             local invokingResource = GetInvokingResource()
@@ -40,3 +37,6 @@ AddEventHandler('onResourceStop', function(res)
         end
     end
 end)
+
+if initializationError then return false, initializationError .. '; other bypasses may be active' end
+return true

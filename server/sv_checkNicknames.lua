@@ -1,8 +1,3 @@
-local data = LoadResourceFile(CurrentResourceName, 'config.lua')
-local Config = assert(load(data))()?.CheckNicknames
-if not Config?.enable then return end
-while not READY do Citizen.Wait(0) end
-
 local function trim(s)
   return (s:gsub('^%s+', ''):gsub('%s+$', ''))
 end
@@ -45,3 +40,5 @@ AddEventHandler('playerConnecting', function(playerName, setKickReason, deferral
   end
   deferrals.done()
 end)
+
+return true

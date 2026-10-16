@@ -1,8 +1,5 @@
-local data = LoadResourceFile(CurrentResourceName, 'config.lua')
-local Config = assert(load(data))()?.EasyBypass
-if not Config?.enable then return end
-while not READY do Citizen.Wait(0) end
 local R_EVENTS = {}
+local initializationError
 local ClientEvents = {}
 local B_CATEGORY = {
     -- AdminMenu
@@ -198,9 +195,9 @@ end)
 
 do
     for startEvent, v in pairs(Config.onServerTrigger) do
-        if type(v) ~= 'table' then Error('can\'t load bypasses config for event: ' .. startEvent); goto continue end
+        if type(v) ~= 'table' then initializationError = 'Invalid bypass configuration for event: ' .. tostring(startEvent); Error(initializationError); goto continue end
         if not v.enable then goto continue end
-        if not v.bypass or v.endEvent == nil then Error('Missing bypass/endEvent for server bypass event: ' .. startEvent); goto continue end
+        if not v.bypass or v.endEvent == nil then initializationError = 'Missing bypass/endEvent for server bypass event: ' .. tostring(startEvent); Error(initializationError); goto continue end
 
         do
             local endEvent = v.endEvent
@@ -275,9 +272,9 @@ do
     end
     RegisterNetEvent('fg:addon:onClientTrigger')
     for startEvent, v in pairs(Config.onClientTrigger) do
-        if type(v) ~= 'table' then Error('can\'t load bypasses config for event: ' .. startEvent); goto continue end
+        if type(v) ~= 'table' then initializationError = 'Invalid bypass configuration for event: ' .. tostring(startEvent); Error(initializationError); goto continue end
         if not v.enable then goto continue end
-        if not v.bypass or v.endEvent == nil then Error('Missing bypass/endEvent for client bypass event: ' .. startEvent); goto continue end
+        if not v.bypass or v.endEvent == nil then initializationError = 'Missing bypass/endEvent for client bypass event: ' .. tostring(startEvent); Error(initializationError); goto continue end
 
         do
             local bypasses = v.bypass
@@ -355,3 +352,6 @@ AddEventHandler('onResourceStop', function(res)
         end
     end
 end)
+
+if initializationError then return false, initializationError .. '; other bypasses may be active' end
+return true

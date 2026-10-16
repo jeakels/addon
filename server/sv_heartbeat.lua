@@ -1,8 +1,3 @@
-local data = LoadResourceFile(CurrentResourceName, 'config.lua')
-local Config = assert(load(data))()?.Heartbeat
-if not Config?.enable then return end
-while not READY do Citizen.Wait(0) end
-
 local sessions = {}
 
 math.randomseed(GetGameTimer())
@@ -117,3 +112,5 @@ Citizen.CreateThread(function()
         Citizen.Wait(2000)
     end
 end)
+
+return true

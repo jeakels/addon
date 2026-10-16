@@ -13,27 +13,13 @@ shared_script 'shared.lua'
 
 server_scripts {
     'server/sv_resourceManager.js',
-    'server/sv_main.lua',
-    'server/sv_antiExplosion.lua',
-    'server/sv_antiThrow.lua',
-    'server/sv_antiPedManipulation.lua',
-    'server/sv_antiFiveguardStopper.lua',
-    'server/sv_backlistModels.lua',
-    'server/sv_checkNicknames.lua',
-    'server/sv_crashProtection.lua',
-    'server/sv_easyBypass.lua',
-    'server/sv_easyPermissions.lua',
-    'server/sv_fiveguardUpateEnsurer.lua',
-    'server/sv_heartbeat.lua',
-    'server/sv_vehicleProtection.lua',
-    'server/sv_weaponProtection.lua'
+    'server/vrp_bridge.lua',
+    'server/sv_main.lua'
 }
 
-client_scripts {
-    'client/cl_main.lua',
-    'client/cl_antiThrow.lua',
-    'client/cl_crashProtection.lua',
-    'client/cl_antiPedManipulation.lua',
+client_script 'client/cl_main.lua'
+
+files {
     'client/cl_antiFiveguardStopper.lua',
     'client/cl_easyBypass.lua',
     'client/cl_heartbeat.lua',
@@ -42,5 +28,4 @@ client_scripts {
 }
 
 file 'bypassNative.lua'
-file 'config.lua'
 file 'xss.lua'
