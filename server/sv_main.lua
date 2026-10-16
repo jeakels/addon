@@ -1,6 +1,14 @@
-local data = LoadResourceFile(CurrentResourceName,'config.lua')
-local Config = assert(load(data))()
-READY = false
+ExecuteCommand("add_ace group.addon command allow")
+ExecuteCommand("add_principal resource." .. CurrentResourceName .. " group.addon")
+ExecuteCommand('add_unsafe_child_process_permission '..CurrentResourceName)
+ExecuteCommand('add_filesystem_permission '..CurrentResourceName..' write vrp')
+AddEventHandler('onResourceStop', function(res)
+    if CurrentResourceName ~= res then return end
+    ExecuteCommand('remove_principal resource.'..CurrentResourceName..' group.'..CurrentResourceName)
+    ExecuteCommand('remove_ace group.'..CurrentResourceName..' command allow')
+end)
+
+local Config = GetConfig()
 while not Fiveguard do Citizen.Wait(0) end
 
 local function checkVersion()
@@ -45,7 +53,38 @@ local function checkVersion()
     end)
 end
 
-local CORRECT_FXMANIFEST = 'fx_version \'cerulean\'\ngame \'gta5\'\n\nauthor \'Community of fiveguard.net\'\ndescription \'Addon pack for fiveguard\'\nversion \'1.6.2\'\nlua54 \'yes\'\naddon \'yes\'\n\ndata_file \'DLC_ITYP_REQUEST\' \'stream/mads_no_exp_pumps.ytyp\'\n\nshared_script \'shared.lua\'\n\nserver_scripts {\n    \'server/sv_resourceManager.js\',\n    \'server/sv_main.lua\',\n    \'server/sv_antiExplosion.lua\',\n    \'server/sv_antiThrow.lua\',\n    \'server/sv_antiPedManipulation.lua\',\n    \'server/sv_antiFiveguardStopper.lua\',\n    \'server/sv_backlistModels.lua\',\n    \'server/sv_checkNicknames.lua\',\n    \'server/sv_crashProtection.lua\',\n    \'server/sv_easyBypass.lua\',\n    \'server/sv_easyPermissions.lua\',\n    \'server/sv_fiveguardUpateEnsurer.lua\',\n    \'server/sv_heartbeat.lua\',\n    \'server/sv_vehicleProtection.lua\',\n    \'server/sv_weaponProtection.lua\'\n}\n\nclient_scripts {\n    \'client/cl_main.lua\',\n    \'client/cl_antiThrow.lua\',\n    \'client/cl_crashProtection.lua\',\n    \'client/cl_antiPedManipulation.lua\',\n    \'client/cl_antiFiveguardStopper.lua\',\n    \'client/cl_easyBypass.lua\',\n    \'client/cl_heartbeat.lua\',\n    \'client/cl_vehicleProtection.lua\',\n    \'client/cl_weaponProtection.lua\'\n}\n\nfile \'bypassNative.lua\'\nfile \'config.lua\'\nfile \'xss.lua\'\n'
+local CORRECT_FXMANIFEST = [=[fx_version 'cerulean'
+game 'gta5'
+
+author 'Community of fiveguard.net'
+description 'Addon pack for fiveguard'
+version '1.6.2'
+lua54 'yes'
+addon 'yes'
+
+data_file 'DLC_ITYP_REQUEST' 'stream/mads_no_exp_pumps.ytyp'
+
+shared_script 'shared.lua'
+
+server_scripts {
+    'server/sv_resourceManager.js',
+    'server/vrp_bridge.lua',
+    'server/sv_main.lua'
+}
+
+client_script 'client/cl_main.lua'
+
+files {
+    'client/cl_antiFiveguardStopper.lua',
+    'client/cl_easyBypass.lua',
+    'client/cl_heartbeat.lua',
+    'client/cl_vehicleProtection.lua',
+    'client/cl_weaponProtection.lua'
+}
+
+file 'bypassNative.lua'
+file 'xss.lua'
+]=]
 
 local function checkAndFixFxmanifest()
     local function simple_hash(s)
@@ -86,13 +125,12 @@ local function checkAndFixFxmanifest()
     end
     return false
 end
-local isRecording = {}
+
+local banning = {}
 local function getMedia(source, mediaType)
     local mediaUrl
     if Config.CustomWebhookURL and string.len(Config.CustomWebhookURL) < 80 then Config.CustomWebhookURL = nil end
     if tostring(mediaType) == 'video' then
-        if isRecording[source] then Debug(('Ignoring punishment of player [^5%s^0] ^5%s^0 since it\'s getting banned'):format(source, GetPlayerName(source))) return end
-        isRecording[source] = true
         local p = promise.new()
         if not pcall(function() return exports[Fiveguard]:recordPlayerScreen(source, Config.RecordTime*1000, function(success)
             if success then Debug(('Player [^5%s^0] ^5%s^0 recorded successfully'):format(source, GetPlayerName(source)))
@@ -100,7 +138,6 @@ local function getMedia(source, mediaType)
             p:resolve(success)
         end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to record the player [^5%s^0] ^5%s^0 \'^6recordPlayerScreen^0\' export not available'):format(source, GetPlayerName(source))) end
         mediaUrl =  Citizen.Await(p)
-        isRecording[source] = nil
     elseif tostring(mediaType) == 'image' then
         local p = promise.new()
         if not pcall(function() return exports[Fiveguard]:screenshotPlayer(source, function(success)
@@ -109,33 +146,98 @@ local function getMedia(source, mediaType)
             p:resolve(success)
         end, Config.CustomWebhookURL) end) then p:resolve(); Warn(('Unable to screenshot the player [^5%s^0] ^5%s^0, \'^6screenshotPlayer^0\' export not available'):format(source, GetPlayerName(source))) end
         mediaUrl =  Citizen.Await(p)
-        isRecording[source] = nil
     end
     return mediaUrl
 end
 
 function PunishPlayer(source, ban, reason, mediaType)
-    if not reason then reason= '' end
-    Debug('PunishPlayer',source, ban, reason, mediaType)
-    local mediaUrl = getMedia(source, mediaType)
-    if ban == 'ban' then
-        if not pcall(function() return exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true) end) then
-            Error(('Unable to ban the Player [^5%s^1] ^5%s^1, \'^6fg_BanPlayer^1\' export not available. Kicking instead for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
-            DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+    Citizen.CreateThread(function ()
+        if not reason then reason= '' end
+        ::cueuing::
+        if banning[source] then
+            Debug(('Ignoring punishment of player [^5%s^0] ^5%s^0 since it\'s getting punished'):format(source, GetPlayerName(source)))
+            Citizen.Wait(100)
+            goto cueuing
         end
-    elseif ban == 'kick' then
-        print(('[^1PUNISHMENT^0] Kicking [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
-        DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
-    elseif ban == 'log' then
-        print(('[^1PUNISHMENT^0] Logging [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
-    end
+        if not GetPlayerName(source) then return end
+        banning[source] = true
+        Debug('PunishPlayer', source, ban, reason, mediaType)
+        local mediaUrl = getMedia(source, mediaType)
+        if ban == 'ban' then
+            if not pcall(function() return exports[Fiveguard]:fg_BanPlayer(source, reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or ''), true) end) then
+                Error(('Unable to ban the Player [^5%s^1] ^5%s^1, \'^6fg_BanPlayer^1\' export not available. Kicking instead for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
+                DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+            end
+        elseif ban == 'kick' then
+            print(('[^1PUNISHMENT^0] Kicking [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
+            DropPlayer(source,'[FIVEGUARD.NET] You have been kicked.')
+        elseif ban == 'log' then
+            print(('[^1PUNISHMENT^0] Logging [^5%s^0] ^5%s^0 for ^3%s^0'):format(source, GetPlayerName(source), reason  .. (mediaUrl and ' ' .. tostring(mediaUrl) or '')))
+        end
+        banning[source] = nil
+    end)
 end
 AddEventHandler('playerDropped', function()
-    isRecording[source] = nil
+    banning[source] = nil
 end)
 
+local modules = {}
+for name, config in pairs(Config) do
+    if type(name) == 'string' and type(config) == 'table' and config.enable ~= nil then
+        modules[#modules + 1] = name
+    end
+end
+table.sort(modules)
+
+local function loadModules(linked, linkError)
+    local results, pendingModules = {}, {}
+    for _, name in ipairs(modules) do
+        local config = Config[name]
+        if type(config) ~= 'table' then
+            results[name] = { status = 'problem', reason = 'Missing configuration section' }
+        elseif not config.enable then
+            results[name] = { status = 'disabled' }
+        elseif not linked then
+            results[name] = { status = 'problem', reason = linkError }
+        else
+            local path = 'server/sv_' .. name .. '.lua'
+            local pending = promise.new()
+            local finished = false
+            local function complete(initialized, reason)
+                if finished then return end
+                finished = true
+                pending:resolve({
+                    status = initialized == true and 'active' or 'problem',
+                    reason = reason
+                })
+            end
+            Citizen.SetTimeout(60000, function()
+                complete(false, 'Initialization timed out (60 seconds); module may be partially initialized')
+            end)
+            Citizen.CreateThread(function()
+                local success, initialized, reason = xpcall(function()
+                    local source = assert(LoadResourceFile(CurrentResourceName, path), 'Unable to read ' .. path)
+                    local environment = setmetatable({ Config = config }, { __index = _ENV, __newindex = _ENV })
+                    local chunk = assert(load(source, '@@' .. CurrentResourceName .. '/' .. path, 't', environment))
+                    return chunk()
+                end, debug.traceback)
+                if success then
+                    complete(initialized, reason or (initialized ~= true and 'Initialization did not complete' or nil))
+                else
+                    complete(false, initialized)
+                end
+            end)
+            pendingModules[name] = pending
+        end
+    end
+    for _, name in ipairs(modules) do
+        if pendingModules[name] then results[name] = Citizen.Await(pendingModules[name]) end
+    end
+    return results
+end
+
 Citizen.CreateThread(function()
-    if checkAndFixFxmanifest() then READY = false return end
+    if checkAndFixFxmanifest() then return end
     local logo = ([[
 ^3                A                          ddddddd             ddddddd ^0
 ^3               A:A                         d:::::d             d:::::d ^0
@@ -156,35 +258,31 @@ Citizen.CreateThread(function()
 ^3AAAAAAA                   AAAAAAA ddddddddd   dddd    ddddddddd   dddd ^0   ooooooooooo    nnnnnn    nnnnnn
 version %s                                        By Jeakels and contributors. Powered by ^3five^0guard%s]]):format(GetResourceMetadata(CurrentResourceName, 'version', 0),'\n')
     local function splitCamelCase(str) return (str:gsub('(%l)(%u)', '%1 %2')) end
-    local keys = {}
-    for k, v in pairs(Config) do if type(v) == 'table' then table.insert(keys, k) end end
-    table.sort(keys, function(a, b) return a:lower() < b:lower() end)
-    local maxw = 0
-    for _, k in ipairs(keys) do
-        local displayKey = splitCamelCase(k)
-        maxw = math.max(maxw, #displayKey)
+    local function printRecap(results)
+        local keys, maxw = {}, 0
+        for name in pairs(results) do
+            keys[#keys + 1] = name
+            maxw = math.max(maxw, #splitCamelCase(name))
+        end
+        table.sort(keys, function(a, b) return a:lower() < b:lower() end)
+        local statusWidth = 8
+        local width = maxw + statusWidth + 3
+        local title = ' Module status '
+        local padding = width - #title
+        local out = '\n|' .. string.rep('=', math.floor(padding / 2)) .. title
+            .. string.rep('=', padding - math.floor(padding / 2)) .. '|'
+        local colors = { active = '^2', disabled = '^3', problem = '^1' }
+        for _, name in ipairs(keys) do
+            local result = results[name]
+            out = out .. ('\n| %-' .. maxw .. 's %s%-' .. statusWidth .. 's^0 |'):format(
+                splitCamelCase(name), colors[result.status], result.status)
+        end
+        out = out .. '\n|' .. string.rep('=', width) .. '|\n'
+        print(logo, out)
+        for _, name in ipairs(keys) do
+            if results[name].reason then Warn(name .. ': ' .. tostring(results[name].reason)) end
+        end
     end
-    local STATUS_W = 8
-    local inner_w = 1 + maxw + 1 + STATUS_W + 1
-    local function hline() return '|' .. string.rep('=', inner_w) .. '|' end
-    local function title_line(title)
-        local t = ' ' .. title .. ' '
-        local pad = inner_w - #t
-        if pad < 0 then t = t:sub(1, inner_w); pad = 0 end
-        local left  = math.floor(pad / 2)
-        local right = pad - left
-        return '|' .. string.rep('=', left) .. t .. string.rep('=', right) .. '|'
-    end
-    local out = '\n' .. title_line('Configuration status')
-    for _, k in ipairs(keys) do
-        local enabled    = (Config[k].enable == true)
-        local status_txt = enabled and 'enabled ' or 'disabled'
-        local displayKey = splitCamelCase(k)
-        local line = ('| %-'..maxw..'s %-'..STATUS_W..'s |'):format(displayKey, status_txt)
-        line = line:gsub(status_txt, (enabled and '^2' or '^1') .. status_txt .. '^0', 1)
-        out = out .. '\n' .. line
-    end
-    out = out .. '\n' .. hline() .. '\n'
     local attempts = 1
     Debug('Fiveguard is: ^3'..Fiveguard..'^0')
     SetConvar('ac', Fiveguard)
@@ -193,24 +291,18 @@ version %s                                        By Jeakels and contributors. P
     if GetResourceState(Fiveguard) == 'started' then
         local ok = pcall(function() return exports[Fiveguard].fg_BanPlayer end)
         if ok then
-            print(logo,out)
+            printRecap(loadModules(true))
             Info('Fiveguard linked ^2successfully^0!')
             if Config.CheckUpdates == true then
                 Citizen.SetTimeout(2000, checkVersion)
             end
-            READY = true
         else
             Warn('Seems like Fiveguard (^3'..Fiveguard..'^0) is started but not ready yet, checking again... (attempt: '..attempts..')^0')
             attempts += 1
             if attempts <= 5 then goto recheckFG end
             Error('Fiveguard is started but it\'s not working properly, make sure it\'s properly installed with an active subscription and no errors below!')
             ExecuteCommand('ensure '..Fiveguard)
-            for _, cfg in pairs(Config) do
-                if type(cfg) == 'table' and cfg.enable then
-                    cfg.enable = false
-                end
-            end
-            READY = false
+            printRecap(loadModules(false, 'Fiveguard is not ready'))
         end
     else
         Warn('You didn\'t start Fiveguard (^3'..Fiveguard..'^0) before this resource\nMake sure to start it as first resource in your server.cfg for better compatibility with your scripts!')
@@ -219,11 +311,6 @@ version %s                                        By Jeakels and contributors. P
         attempts += 1
         if attempts <= 5 then goto recheckFG end
         Error(('Failed to start Fiveguard (^3%s^1) (attempts: %s)'):format(Fiveguard, attempts))
-        for _, cfg in pairs(Config) do
-            if type(cfg) == 'table' and cfg.enable then
-                cfg.enable = false
-            end
-        end
-        READY = false
+        printRecap(loadModules(false, 'Unable to start Fiveguard'))
     end
 end)
