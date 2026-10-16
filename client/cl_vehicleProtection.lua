@@ -1,8 +1,3 @@
-local data = LoadResourceFile(CurrentResourceName, 'config.lua')
-local Config = assert(load(data))()?.VehicleProtection
-if not Config?.enable then return end
-while not READY do Citizen.Wait(0) end
-
 local function isVehicleValid(vehicle)
     if Config.preventUnNetworkedEntity then
         local netId = NetworkGetNetworkIdFromEntity(vehicle)
@@ -16,14 +11,8 @@ local function isVehicleValid(vehicle)
             return false, 'Vehicle with Invalid Owner'
         end
     end
-    if Config.preventNilResource or Config.preventUnauthorizedResource.enable then
-        local scriptName = GetEntityScript(vehicle)
-        if Config.preventNilResource and scriptName == nil then
-            return false, 'Vehicle with an invalid resource (2)'
-        end
-        if Config.preventUnauthorizedResource.enable and scriptName and not Config.preventUnauthorizedResource.resourceWhitelisted[scriptName] then
-            return false, 'Vehicle from non-whitelisted script: ' .. tostring(scriptName) .. ' (2)'
-        end
+    if Config.preventNilResource and GetEntityScript(vehicle) == nil then
+        return false, 'Vehicle with an invalid resource (2)'
     end
     return true
 end
@@ -38,8 +27,7 @@ local function check()
 
             if not isValid then
                 DeleteEntity(vehicle)
-                Debug(('[VehicleProtection] Deleted vehicle %s for reason: %s'):format(vehicle, reason))
-                TriggerServerEvent('fg:addon:VehicleProtection:punish', reason)
+                Debug(('[vehicleProtection] Deleted vehicle %s for reason: %s'):format(vehicle, reason))
             end
         end
     end
@@ -65,7 +53,7 @@ if Config.preventSafeSpawn.enable then
                     if not inWhitelistZone then
                         DeleteEntity(veh)
                         Debug('[AntiSafeSpawn] Deleted vehicle', veh)
-                        TriggerServerEvent('fg:addon:VehicleProtection:punish','Safe spawned a vehicle')
+                        TriggerServerEvent('fg:addon:vehicleProtection:punish','Safe spawned a vehicle')
                     end
                 end
             end
@@ -73,3 +61,5 @@ if Config.preventSafeSpawn.enable then
     end
     check_safespawn()
 end
+
+return true
