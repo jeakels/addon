@@ -1,68 +1,39 @@
 return {
     Debug = false,
-    CustomWebhookURL = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
+    CustomMediaWebhookURL = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
     RecordTime = 5, -- (seconds)
     CheckUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
-    FiveguardUpdateEnsurer = {
-        enable = true -- Automatically restarts fiveguard when an update is installed avoiding downtimes, remember that this can crash players since restarting resources runtime is not reccomended (manual or by scripts or wathever).
+    fiveguardUpdateEnsurer = {
+        enable = true -- Automatically restarts fiveguard when an update is installed avoid exposing your server without anticheat, remember that this can crash server/players since restarting resources runtime is not reccomended (manually or by scripts or wathever).
     },
-    Heartbeat = {
+    heartbeat = {
         enable = true,      -- prevent cheaters to stop client side of this resource
-        joinGrace = 30,     -- Seconds ignored after the player spawned
+        joinGrace = 45,     -- Seconds ignored after the player spawned
         threadTime = 5,     -- Interval between heartbeats (seconds)
         graceMisses = 3,    -- How many consecutive misses are tolerated before punishment
         tokenExpiry = 10,   -- Token expiry time (seconds)
         punishment = 'kick' -- ban/kick/log
     },
-    CrashProtection = {
+    crashProtection = {
         enable = true,      -- prevent cheaters to crash players
         punishment = 'ban', -- ban/kick/log
         banMedia = 'image', -- 'image', 'video' or 'false'
-        preventLumia = true,
-        preventPneumaticHammer = true,
-        preventTableGolfSummer = true,
-        swapWeaponExploit = true,
         handleJumpExploit = true,
-        ragdollSpoofExploit = true,
-        heliPassengerRappelExploit = true,
         vehicleOwnerExploit = true
     },
-    AntiThrow = {
-        enable = true,      -- prevent cheaters to take and launch vehicles
-        punishment = 'ban', -- ban/kick/log
-        banMedia = 'image', -- image/video/false
-        whitelistedZones = {
-            -- { -- EXAMPLE
-            --     coords = vector3(0, 0, 0),
-            --     radius = 100.0
-            -- },
-            GetResourceState('rtx_themepark') ~= 'missing' and { --JUST A WHITELIST FOR A SPECIFIC SCRIPT
-                coords = vector3(-1659.5439, -1102.4888, 13.1184),  -- RTX ThemePark (Beach ThemePark)
-                radius = 150.0
-            } or nil
-        }
-    },
-    CheckNicknames = {
+    checkNicknames = {
         enable = false,         -- block players that don't follow the allowed characters
         minNicknameLength = 3,  -- Minimum lenght of palyer nicknames, set false to disable
         maxNicknameLength = 25, -- Maximum lenght of palyer nicknames, set false to disable
         allowedPattern = '^[A-Za-z0-9_.%-%s]+$' -- Allowed characters, set false to disable
     },
-    AntiFiveguardStopper = {
+    antiFiveguardStopper = {
         enable = true,      -- Detect if someone try to stop fiveguard
         punishment = 'ban', -- ban/kick/log
         banMedia = 'image', -- image/video/false
         checkInterval = 5   -- interval in seconds
     },
-    AntiPedManipulation = { -- Credit: @somis12
-        -- If it gives you false bans, change the "true" below to "false" (enable = true / enable = false).
-        -- NOTE: The system will still activate ONLY if onesync_population is disabled.
-        enable = true and not GetConvarBool("onesync_population", true),
-        maxBucketUsed = 15000,
-        punishment = 'ban', -- ban/kick/log
-        banMedia = 'image' -- image/video/false
-    },
-    VehicleProtection = { -- Credit: @jona0081 for some detections included here
+    vehicleProtection = { -- Credit: @jona0081 for some detections included here
         enable = true,
         punishment = 'log', -- ban/kick/log
         banMedia = 'image', -- image/video/false
@@ -81,38 +52,14 @@ return {
         preventNilResource = false,       -- !!Can make false detections
         preventUnNetworkedEntity = false, -- !!Can make false detections
         maxVehicleCheckDistance = 50,
-        checkInterval = 5,
-        preventUnauthorizedResource = {
-            enable = false,               -- If enabled, whitelist your resources below
-            resourceWhitelisted = {
-                ['monitor']             = GetResourceState('monitor') ~= 'missing',
-                ['es_extended']         = GetResourceState('es_extended') ~= 'missing',
-                ['esx_vehicleshop']     = GetResourceState('esx_vehicleshop') ~= 'missing',
-                ['esx_garages']         = GetResourceState('esx_garages') ~= 'missing',
-                ['qb-core']             = GetResourceState('qb-core') ~= 'missing',
-                ['qb-vehicleshop']      = GetResourceState('qb-vehicleshop') ~= 'missing',
-                ['qb-garages']          = GetResourceState('qb-garages') ~= 'missing',
-                ['qbx_core']            = GetResourceState('qbx_core') ~= 'missing',
-                ['ox_lib']              = GetResourceState('ox_lib') ~= 'missing',
-                ['jg-advancedgarages']  = GetResourceState('jg-advancedgarages') ~= 'missing',
-                ['okokGarage']          = GetResourceState('okokGarage') ~= 'missing',
-                ['okokVehicleShop']     = GetResourceState('okokVehicleShop') ~= 'missing',
-                ['cd_garage']           = GetResourceState('cd_garage') ~= 'missing',
-                ['loaf_garage']         = GetResourceState('loaf_garage') ~= 'missing',
-                ['rcore_garage']        = GetResourceState('rcore_garage') ~= 'missing',
-                ['codem-garage']        = GetResourceState('codem-garage') ~= 'missing',
-                ['qs-smartphone-pro']   = GetResourceState('qs-smartphone-pro') ~= 'missing',
-                ['qs-smartphone']       = GetResourceState('qs-smartphone') ~= 'missing',
-                ['lb-phone']            = GetResourceState('lb-phone') ~= 'missing',
-                ['okokPhone']           = GetResourceState('okokPhone') ~= 'missing',
-            }
-        },
+        checkInterval = 5
     },
-    WeaponProtection = {
+    weaponProtection = {
         enable = true,
+        inventorySync = true, -- Disarm held weapons missing from the synced inventory.
         AntiGiveWeapon = { -- Credit: @locutor404 & @somis12
             enable = true,
-            relaxed = false,    -- determinate if check every shot or no
+            relaxed = true,    -- determinate if check every shot or no
             punishment = 'ban', -- ban/kick/log
             banMedia = 'image'  -- image/video/false
         },
@@ -127,67 +74,9 @@ return {
                 enable = true,
                 maxDistance = 13
             }
-        },
-        AntiGiveWeaponToPed = {
-            enable = true,
-            punishment = 'ban' -- ban/kick/log
-        },
-        AntiRemoveWeaponFromPed = {
-            enable = true,
-            punishment = 'ban' -- ban/kick/log
         }
     },
-    AntiExplosions = {
-        enable = true,
-        preventExplosions = true, -- Crédit: @jona0081
-        preventSafeExplosions = false,
-        preventUnnetworkedExplosions = true,
-        punishment = 'ban', -- ban/kick/log
-        banMedia = 'image' -- image/video/false
-    },
-    BlacklistedModels = {
-        enable = true,
-        punishment = 'ban', -- ban/kick/log
-        banMedia = 'image', -- image/video/false
-        checkInterval = 10, -- in seconds
-        blacklist = { -- a list of ped/animal models that player can't use
-            [GetHashKey('a_c_fish')] = true,
-            [GetHashKey('a_c_boar')] = true,
-            [GetHashKey('a_c_boar_02')] = true,
-            [GetHashKey('a_c_cat_01')] = true,
-            [GetHashKey('a_c_chickenhawk')] = true,
-            [GetHashKey('a_c_chimp')] = true,
-            [GetHashKey('a_c_chimp_02')] = true,
-            [GetHashKey('a_c_chop')] = true,
-            [GetHashKey('a_c_cormorant')] = true,
-            [GetHashKey('a_c_cow')] = true,
-            [GetHashKey('a_c_coyote')] = true,
-            [GetHashKey('a_c_crow')] = true,
-            [GetHashKey('a_c_deer')] = true,
-            [GetHashKey('a_c_dolphin')] = true,
-            [GetHashKey('a_c_hen')] = true,
-            [GetHashKey('a_c_humpback')] = true,
-            [GetHashKey('a_c_husky')] = true,
-            [GetHashKey('a_c_killerwhale')] = true,
-            [GetHashKey('a_c_mtlion')] = true,
-            [GetHashKey('a_c_pig')] = true,
-            [GetHashKey('a_c_pigeon')] = true,
-            [GetHashKey('a_c_poodle')] = true,
-            [GetHashKey('a_c_pug')] = true,
-            [GetHashKey('a_c_rabbit_01')] = true,
-            [GetHashKey('a_c_rat')] = true,
-            [GetHashKey('a_c_retriever')] = true,
-            [GetHashKey('a_c_rhesus')] = true,
-            [GetHashKey('a_c_rottweiler')] = true,
-            [GetHashKey('a_c_rottweiler_02')] = true,
-            [GetHashKey('a_c_sharkhammer')] = true,
-            [GetHashKey('a_c_sharktiger')] = true,
-            [GetHashKey('a_c_shepherd')] = true,
-            [GetHashKey('a_c_stingray')] = true,
-            [GetHashKey('a_c_westy')] = true
-        },
-    },
-    EasyBypass = {
+    easyBypass = {
         enable = true,   -- Allows players to get a bypass directly by native execution on installed resources or when a event configured is triggered
         verbose = false, -- if true, prints are more detailed and don't warn if player already have permission
         onClientTrigger = {
@@ -378,25 +267,236 @@ return {
             SetPedComponentVariation = true,
         }
     },
-    EasyPermissions = {
-        enable = false,
-        -- !! DO NOT ENABLE MORE THAN 1 PERMISSION SYSTEM BELOW AT SAME TIME! Default is ACE
+    easyPermissions = {
+        enable = true, --  Do not use multple permission system at same time! On conflicts txAdmin will be used.
+        DiscordPermissions = { -- On joining discord permission system
+            enable = false,
+            --[[ To get a token and the bot to join your server, follow these two guides:
+            Setting up a bot -> https://discordjs.guide/legacy/preparations/app-setup and
+            Adding your bot to servers -> https://discordjs.guide/legacy/preparations/adding-your-app
+            NOTE: The bot doesn't need any permission to work
+            ]]
+            botToken = '', -- Create your App -> https://discord.com/developers/applications
+            guildId = 'auto', -- Auto requires exactly one guild; otherwise specify its ID as a string.
+            users = { -- Users take precedence over roles.
+                -- ['192000425828810752'] = { 'AdminMenuAccess', 'AnnouncementAccess', 'VisualsAccess', 'EntityCleanupAccess', 'PlayerModerationAccess', 'PlayerTeleportAccess', 'VehicleAccess', 'SelfAccess', 'QuickTeleportAccess', 'WorldAccess', 'WeaponAccess', 'PlayersAccess', 'PlayerManagementAccess', 'SpectateAccess', 'ScreenshotAccess', 'MonitorAccess', 'OfflinePlayersAccess', 'FreecamAccess', 'LogsAccess', 'PlayerSelectorAccess', 'BanListAccess', 'PedModelsAccess', 'BypassSpectate', 'BypassGodMode', 'BypassInvisible', 'BypassStealOutfit', 'BypassInfStamina', 'BypassNoclip', 'BypassSuperJump', 'BypassFreecam', 'BypassSpeedHack', 'BypassTeleport', 'BypassNightVision', 'BypassThermalVision', 'BypassExplosiveAmmo', 'BypassOCR', 'BypassNuiDevtools', 'BypassBlacklistedTextures', 'BlipsBypass', 'BypassCbScanner', 'BypassSpoofedBulletShot', 'BypassWeaponDmgModifier', 'BypassInfAmmo', 'BypassNoReload', 'BypassRapidFire', 'BypassVehicleFixAndGodMode', 'BypassVehicleHandlingEdit', 'BypassVehicleModifier', 'BypassBulletproofTires', 'BypassVehiclePlateChanger', 'BypassModelChanger', 'BypassWeaponBlacklist', 'FGCommands', 'BypassVPN', 'BypassExplosion', 'BypassClearTasks', 'BypassParticle', 'BypassSpoofedWeapons' },
+                -- ['234567890123456789'] = { 'SpectateAccess' },
+            },
+            roles = { -- Highest priority FIRST. One ID per table; only the first matching role grants permissions.
+                -- { ['345678901234567890'] = { 'AdminMenuAccess', 'AnnouncementAccess', 'VisualsAccess', 'EntityCleanupAccess', 'PlayerModerationAccess', 'PlayerTeleportAccess', 'VehicleAccess', 'SelfAccess', 'QuickTeleportAccess', 'WorldAccess', 'WeaponAccess', 'PlayersAccess', 'PlayerManagementAccess', 'SpectateAccess', 'ScreenshotAccess', 'MonitorAccess', 'OfflinePlayersAccess', 'FreecamAccess', 'LogsAccess', 'PlayerSelectorAccess', 'BanListAccess', 'PedModelsAccess', 'BypassSpectate', 'BypassGodMode', 'BypassInvisible', 'BypassStealOutfit', 'BypassInfStamina', 'BypassNoclip', 'BypassSuperJump', 'BypassFreecam', 'BypassSpeedHack', 'BypassTeleport', 'BypassNightVision', 'BypassThermalVision', 'BypassExplosiveAmmo', 'BypassOCR', 'BypassNuiDevtools', 'BypassBlacklistedTextures', 'BlipsBypass', 'BypassCbScanner', 'BypassSpoofedBulletShot', 'BypassWeaponDmgModifier', 'BypassInfAmmo', 'BypassNoReload', 'BypassRapidFire', 'BypassVehicleFixAndGodMode', 'BypassVehicleHandlingEdit', 'BypassVehicleModifier', 'BypassBulletproofTires', 'BypassVehiclePlateChanger', 'BypassModelChanger', 'BypassWeaponBlacklist', 'FGCommands', 'BypassVPN', 'BypassExplosion', 'BypassClearTasks', 'BypassParticle', 'BypassSpoofedWeapons' } },
+                -- { ['456789012345678901'] = { 'SpectateAccess' } },
+            }
+        },
         txAdminPermissions = {
-            enable = false,   -- Bypass txAdmin admins
+            enable = true,   -- Bypass txAdmin admins
             fgPermissions = { -- Permissions that'll be set if player has TxAdmin Access
-                --[[ AdminMenu ]]  --
+            --[[ AdminMenu ]] --
+                'AdminMenuAccess',
+                'AnnouncementAccess',
+                'VisualsAccess',
+                'EntityCleanupAccess',
+                'PlayerModerationAccess',
+                'PlayerTeleportAccess',
+                'VehicleAccess',
+                'SelfAccess',
+                'QuickTeleportAccess',
+                'WorldAccess',
+                'WeaponAccess',
+                'PlayersAccess',
+                'PlayerManagementAccess',
+                'SpectateAccess',
+                'ScreenshotAccess',
+                'MonitorAccess',
+                'OfflinePlayersAccess',
+                'FreecamAccess',
+                'LogsAccess',
+                'PlayerSelectorAccess',
+                'BanListAccess',
+                'PedModelsAccess',
+            --[[ Client ]] --
+                'BypassSpectate',
+                'BypassGodMode',
+                'BypassInvisible',
+                'BypassStealOutfit',
+                'BypassInfStamina',
+                'BypassNoclip',
+                'BypassSuperJump',
+                'BypassFreecam',
+                'BypassSpeedHack',
+                'BypassTeleport',
+                'BypassNightVision',
+                'BypassThermalVision',
+                'BypassExplosiveAmmo',
+                'BypassOCR',
+                'BypassNuiDevtools',
+                'BypassBlacklistedTextures',
+                'BlipsBypass',
+                'BypassCbScanner',
+                'BypassSpoofedBulletShot',
+            --[[ Weapon ]] --
+                'BypassWeaponDmgModifier',
+                'BypassInfAmmo',
+                'BypassNoReload',
+                'BypassRapidFire',
+            --[[ Vehicle ]] --
+                'BypassVehicleFixAndGodMode',
+                'BypassVehicleHandlingEdit',
+                'BypassVehicleModifier',
+                'BypassBulletproofTires',
+                'BypassVehiclePlateChanger',
+            --[[ Blacklist ]] --
+                'BypassModelChanger',
+                'BypassWeaponBlacklist',
+            --[[ Misc ]] --
+                'FGCommands',
+                'BypassVPN',
+                'BypassExplosion',
+                'BypassClearTasks',
+                'BypassParticle',
+                'BypassSpoofedWeapons',
+            }
+        },
+        FrameworkPermissions = {
+            enable = false, -- Use framework permission to determinate when add or remove fg perms
+            customFramework = {
+                enable = false, -- enable this only if u have a custom settings and u know what u are doing
+                customEvent = '', -- name of the events that's triggered when a player get/lose a group
+                invokerResource = '' -- name of the resource that's triggers the event (security check)
+            },
+            groups = {
+                ['god'] = {
+                --[[ AdminMenu ]] --
                     'AdminMenuAccess',
                     'AnnouncementAccess',
-                    'ESPAccess',
-                    'ClearEntitiesAccess',
-                    'BanAndKickAccess',
-                    'GotoAndBringAccess',
+                    'VisualsAccess',
+                    'EntityCleanupAccess',
+                    'PlayerModerationAccess',
+                    'PlayerTeleportAccess',
                     'VehicleAccess',
-                    'MiscAccess',
+                    'SelfAccess',
+                    'QuickTeleportAccess',
+                    'WorldAccess',
+                    'WeaponAccess',
+                    'PlayersAccess',
+                    'PlayerManagementAccess',
+                    'SpectateAccess',
+                    'ScreenshotAccess',
+                    'MonitorAccess',
+                    'OfflinePlayersAccess',
+                    'FreecamAccess',
                     'LogsAccess',
                     'PlayerSelectorAccess',
-                    'BanListAndUnbanAccess',
-                    'ModelChangerAccess',
+                    'BanListAccess',
+                    'PedModelsAccess',
+                --[[ Client ]] --
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassExplosiveAmmo',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
+                    'BypassSpoofedBulletShot',
+                --[[ Weapon ]] --
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
+                --[[ Vehicle ]] --
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
+                    'BypassVehiclePlateChanger',
+                --[[ Blacklist ]] --
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
+                --[[ Misc ]] --
+                    'FGCommands',
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle',
+                    'BypassSpoofedWeapons',
+                },
+                ['admin'] = {
+                --[[ AdminMenu ]] --
+                    'AdminMenuAccess',
+                    'AnnouncementAccess',
+                    'VisualsAccess',
+                    'EntityCleanupAccess',
+                    'PlayerModerationAccess',
+                    'PlayerTeleportAccess',
+                    'VehicleAccess',
+                    'SelfAccess',
+                    'QuickTeleportAccess',
+                    'WorldAccess',
+                    'WeaponAccess',
+                    'PlayersAccess',
+                    'PlayerManagementAccess',
+                    'SpectateAccess',
+                    'ScreenshotAccess',
+                    'MonitorAccess',
+                    'OfflinePlayersAccess',
+                    'FreecamAccess',
+                    'LogsAccess',
+                    'PlayerSelectorAccess',
+                    'BanListAccess',
+                    'PedModelsAccess',
+                --[[ Client ]] --
+                    'BypassSpectate',
+                    'BypassGodMode',
+                    'BypassInvisible',
+                    'BypassStealOutfit',
+                    'BypassInfStamina',
+                    'BypassNoclip',
+                    'BypassSuperJump',
+                    'BypassFreecam',
+                    'BypassSpeedHack',
+                    'BypassTeleport',
+                    'BypassNightVision',
+                    'BypassThermalVision',
+                    'BypassExplosiveAmmo',
+                    'BypassOCR',
+                    'BypassNuiDevtools',
+                    'BypassBlacklistedTextures',
+                    'BlipsBypass',
+                    'BypassCbScanner',
+                    'BypassSpoofedBulletShot',
+                --[[ Weapon ]] --
+                    'BypassWeaponDmgModifier',
+                    'BypassInfAmmo',
+                    'BypassNoReload',
+                    'BypassRapidFire',
+                --[[ Vehicle ]] --
+                    'BypassVehicleFixAndGodMode',
+                    'BypassVehicleHandlingEdit',
+                    'BypassVehicleModifier',
+                    'BypassBulletproofTires',
+                    'BypassVehiclePlateChanger',
+                --[[ Blacklist ]] --
+                    'BypassModelChanger',
+                    'BypassWeaponBlacklist',
+                --[[ Misc ]] --
+                    'FGCommands',
+                    'BypassVPN',
+                    'BypassExplosion',
+                    'BypassClearTasks',
+                    'BypassParticle',
+                    'BypassSpoofedWeapons',
+                },
+                ['mod'] = {
                 --[[ Client ]] --
                     'BypassSpectate',
                     'BypassGodMode',
@@ -429,165 +529,13 @@ return {
                     'BypassModelChanger',
                     'BypassWeaponBlacklist',
                 --[[ Misc ]] --
-                    'FGCommands',
-                    'BypassVPN',
-                    'BypassExplosion',
-                    'BypassClearTasks',
-                    'BypassParticle'
-            }
-        },
-        FrameworkPermissions = {
-            enable = true, -- Use framework permission to determinate when add or remove fg perms
-            customFramework = {
-                enable = false, -- enable this only if u have a custom settings and u know what u are doing
-                customEvent = '', -- name of the events that's triggered when a player get/lose a group
-                invokerResource = '' -- name of the resource that's triggers the event (security check)
-            },
-            groups = {
-                ['god'] = {
-                    --[[ AdminMenu ]] --
-                    'AdminMenuAccess',
-                    'AnnouncementAccess',
-                    'ESPAccess',
-                    'ClearEntitiesAccess',
-                    'BanAndKickAccess',
-                    'GotoAndBringAccess',
-                    'VehicleAccess',
-                    'MiscAccess',
-                    'LogsAccess',
-                    'PlayerSelectorAccess',
-                    'BanListAndUnbanAccess',
-                    'ModelChangerAccess',
-                    --[[ Client ]] --
-                    'BypassSpectate',
-                    'BypassGodMode',
-                    'BypassInvisible',
-                    'BypassStealOutfit',
-                    'BypassInfStamina',
-                    'BypassNoclip',
-                    'BypassSuperJump',
-                    'BypassFreecam',
-                    'BypassSpeedHack',
-                    'BypassTeleport',
-                    'BypassNightVision',
-                    'BypassThermalVision',
-                    'BypassOCR',
-                    'BypassNuiDevtools',
-                    'BypassBlacklistedTextures',
-                    'BlipsBypass',
-                    'BypassCbScanner',
-                    --[[ Weapon ]] --
-                    'BypassWeaponDmgModifier',
-                    'BypassInfAmmo',
-                    'BypassNoReload',
-                    'BypassRapidFire',
-                    --[[ Vehicle ]] --
-                    'BypassVehicleFixAndGodMode',
-                    'BypassVehicleHandlingEdit',
-                    'BypassVehicleModifier',
-                    'BypassBulletproofTires',
-                    --[[ Blacklist ]] --
-                    'BypassModelChanger',
-                    'BypassWeaponBlacklist',
-                    --[[ Misc ]] --
-                    'FGCommands',
-                    'BypassVPN',
-                    'BypassExplosion',
-                    'BypassClearTasks',
-                    'BypassParticle'
-                },
-                ['admin'] = {
-                    --[[ AdminMenu ]] --
-                    'AdminMenuAccess',
-                    'AnnouncementAccess',
-                    'ESPAccess',
-                    'ClearEntitiesAccess',
-                    'BanAndKickAccess',
-                    'GotoAndBringAccess',
-                    'VehicleAccess',
-                    'MiscAccess',
-                    'LogsAccess',
-                    'PlayerSelectorAccess',
-                    'BanListAndUnbanAccess',
-                    'ModelChangerAccess',
-                    --[[ Client ]] --
-                    'BypassSpectate',
-                    'BypassGodMode',
-                    'BypassInvisible',
-                    'BypassStealOutfit',
-                    'BypassInfStamina',
-                    'BypassNoclip',
-                    'BypassSuperJump',
-                    'BypassFreecam',
-                    'BypassSpeedHack',
-                    'BypassTeleport',
-                    'BypassNightVision',
-                    'BypassThermalVision',
-                    'BypassOCR',
-                    'BypassNuiDevtools',
-                    'BypassBlacklistedTextures',
-                    'BlipsBypass',
-                    'BypassCbScanner',
-                    --[[ Weapon ]] --
-                    'BypassWeaponDmgModifier',
-                    'BypassInfAmmo',
-                    'BypassNoReload',
-                    'BypassRapidFire',
-                    --[[ Vehicle ]] --
-                    'BypassVehicleFixAndGodMode',
-                    'BypassVehicleHandlingEdit',
-                    'BypassVehicleModifier',
-                    'BypassBulletproofTires',
-                    --[[ Blacklist ]] --
-                    'BypassModelChanger',
-                    'BypassWeaponBlacklist',
-                    --[[ Misc ]] --
-                    'FGCommands',
-                    'BypassVPN',
-                    'BypassExplosion',
-                    'BypassClearTasks',
-                    'BypassParticle'
-                },
-                ['mod'] = {
-                    --[[ Client ]] --
-                    'BypassSpectate',
-                    'BypassGodMode',
-                    'BypassInvisible',
-                    'BypassStealOutfit',
-                    'BypassInfStamina',
-                    'BypassNoclip',
-                    'BypassSuperJump',
-                    'BypassFreecam',
-                    'BypassSpeedHack',
-                    'BypassTeleport',
-                    'BypassNightVision',
-                    'BypassThermalVision',
-                    'BypassOCR',
-                    'BypassNuiDevtools',
-                    'BypassBlacklistedTextures',
-                    'BlipsBypass',
-                    'BypassCbScanner',
-                    --[[ Weapon ]] --
-                    'BypassWeaponDmgModifier',
-                    'BypassInfAmmo',
-                    'BypassNoReload',
-                    'BypassRapidFire',
-                    --[[ Vehicle ]] --
-                    'BypassVehicleFixAndGodMode',
-                    'BypassVehicleHandlingEdit',
-                    'BypassVehicleModifier',
-                    'BypassBulletproofTires',
-                    --[[ Blacklist ]] --
-                    'BypassModelChanger',
-                    'BypassWeaponBlacklist',
-                    --[[ Misc ]] --
                     'BypassVPN',
                     'BypassExplosion',
                     'BypassClearTasks',
                     'BypassParticle'
                 },
                 ['helper'] = {
-                    --[[ Client ]] --
+                --[[ Client ]] --
                     'BypassSpectate',
                     'BypassGodMode',
                     'BypassInvisible',
@@ -605,12 +553,12 @@ return {
                     'BypassBlacklistedTextures',
                     'BlipsBypass',
                     'BypassCbScanner',
-                    --[[ Vehicle ]] --
+                --[[ Vehicle ]] --
                     'BypassVehicleFixAndGodMode',
                     'BypassVehicleHandlingEdit',
                     'BypassVehicleModifier',
                     'BypassBulletproofTires',
-                    --[[ Misc ]] --
+                --[[ Misc ]] --
                     'BypassVPN',
                     'BypassExplosion',
                     'BypassClearTasks',
@@ -619,23 +567,33 @@ return {
             }
         },
         AcePermissions = {  -- Use ACE Permissions from FiveM natives
-            enable = false, -- Group Ace Permissions // ONLY ESX FOR THE MOMENT (Soon QbCore & vRP)
-            groups = {      -- define wich perms you want to add for a specific group
+            enable = false,
+            groups = {      -- define wich perms you want to add for a specific group u granted to your admins
                 ['admin'] = {
-                    --[[ AdminMenu ]] --
+                --[[ AdminMenu ]] --
                     'AdminMenuAccess',
                     'AnnouncementAccess',
-                    'ESPAccess',
-                    'ClearEntitiesAccess',
-                    'BanAndKickAccess',
-                    'GotoAndBringAccess',
+                    'VisualsAccess',
+                    'EntityCleanupAccess',
+                    'PlayerModerationAccess',
+                    'PlayerTeleportAccess',
                     'VehicleAccess',
-                    'MiscAccess',
+                    'SelfAccess',
+                    'QuickTeleportAccess',
+                    'WorldAccess',
+                    'WeaponAccess',
+                    'PlayersAccess',
+                    'PlayerManagementAccess',
+                    'SpectateAccess',
+                    'ScreenshotAccess',
+                    'MonitorAccess',
+                    'OfflinePlayersAccess',
+                    'FreecamAccess',
                     'LogsAccess',
                     'PlayerSelectorAccess',
-                    'BanListAndUnbanAccess',
-                    'ModelChangerAccess',
-                    --[[ Client ]] --
+                    'BanListAccess',
+                    'PedModelsAccess',
+                --[[ Client ]] --
                     'BypassSpectate',
                     'BypassGodMode',
                     'BypassInvisible',
@@ -648,33 +606,37 @@ return {
                     'BypassTeleport',
                     'BypassNightVision',
                     'BypassThermalVision',
+                    'BypassExplosiveAmmo',
                     'BypassOCR',
                     'BypassNuiDevtools',
                     'BypassBlacklistedTextures',
                     'BlipsBypass',
                     'BypassCbScanner',
-                    --[[ Weapon ]] --
+                    'BypassSpoofedBulletShot',
+                --[[ Weapon ]] --
                     'BypassWeaponDmgModifier',
                     'BypassInfAmmo',
                     'BypassNoReload',
                     'BypassRapidFire',
-                    --[[ Vehicle ]] --
+                --[[ Vehicle ]] --
                     'BypassVehicleFixAndGodMode',
                     'BypassVehicleHandlingEdit',
                     'BypassVehicleModifier',
                     'BypassBulletproofTires',
-                    --[[ Blacklist ]] --
+                    'BypassVehiclePlateChanger',
+                --[[ Blacklist ]] --
                     'BypassModelChanger',
                     'BypassWeaponBlacklist',
-                    --[[ Misc ]] --
+                --[[ Misc ]] --
                     'FGCommands',
                     'BypassVPN',
                     'BypassExplosion',
                     'BypassClearTasks',
-                    'BypassParticle'
+                    'BypassParticle',
+                    'BypassSpoofedWeapons',
                 },
                 ['mod'] = {
-                    --[[ Client ]] --
+                --[[ Client ]] --
                     'BypassSpectate',
                     'BypassGodMode',
                     'BypassInvisible',
@@ -692,27 +654,27 @@ return {
                     'BypassBlacklistedTextures',
                     'BlipsBypass',
                     'BypassCbScanner',
-                    --[[ Weapon ]] --
+                --[[ Weapon ]] --
                     'BypassWeaponDmgModifier',
                     'BypassInfAmmo',
                     'BypassNoReload',
                     'BypassRapidFire',
-                    --[[ Vehicle ]] --
+                --[[ Vehicle ]] --
                     'BypassVehicleFixAndGodMode',
                     'BypassVehicleHandlingEdit',
                     'BypassVehicleModifier',
                     'BypassBulletproofTires',
-                    --[[ Blacklist ]] --
+                --[[ Blacklist ]] --
                     'BypassModelChanger',
                     'BypassWeaponBlacklist',
-                    --[[ Misc ]] --
+                --[[ Misc ]] --
                     'BypassVPN',
                     'BypassExplosion',
                     'BypassClearTasks',
                     'BypassParticle'
                 },
                 ['helper'] = {
-                    --[[ Client ]] --
+                --[[ Client ]] --
                     'BypassSpectate',
                     'BypassGodMode',
                     'BypassInvisible',
@@ -730,12 +692,12 @@ return {
                     'BypassBlacklistedTextures',
                     'BlipsBypass',
                     'BypassCbScanner',
-                    --[[ Vehicle ]] --
+                --[[ Vehicle ]] --
                     'BypassVehicleFixAndGodMode',
                     'BypassVehicleHandlingEdit',
                     'BypassVehicleModifier',
                     'BypassBulletproofTires',
-                    --[[ Misc ]] --
+                --[[ Misc ]] --
                     'BypassVPN',
                     'BypassExplosion',
                     'BypassClearTasks',
