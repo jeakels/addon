@@ -287,8 +287,8 @@ return {
                 -- { ['456789012345678901'] = { 'SpectateAccess' } },
             }
         },
-        txAdminPermissions = {
-            enable = true,   -- Bypass txAdmin admins
+        txAdminPermissions = { -- txAdmin PERMISSION WILL BE REMOVED IN NEXT UPDATE. ENABLE IT IN FIVEGUARD CONFIG INSTEAD
+            enable = false,   -- Bypass txAdmin admins
             fgPermissions = { -- Permissions that'll be set if player has TxAdmin Access
             --[[ AdminMenu ]] --
                 'AdminMenuAccess',
@@ -357,7 +357,7 @@ return {
             }
         },
         FrameworkPermissions = {
-            enable = false, -- Use framework permission to determinate when add or remove fg perms
+            enable = true, -- Use framework permission to determinate when add or remove fg perms
             customFramework = {
                 enable = false, -- enable this only if u have a custom settings and u know what u are doing
                 customEvent = '', -- name of the events that's triggered when a player get/lose a group
