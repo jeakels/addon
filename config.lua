@@ -1,10 +1,40 @@
 return {
-    Debug = false,
-    CustomMediaWebhookURL = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
-    RecordTime = 5, -- (seconds)
-    CheckUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
+    debug = false,
+    customMediaWebhookUrl = 'https://discord.com/api/webhooks/URL', -- Discord webhook URL to store video or images, if not configured will be used the default screenshot webhook url on your fiveguard config
+    recordTime = 5, -- (seconds)
+    checkUpdates = true, -- RECOMMENDED Enable this to be notified when an update is available!
     fiveguardUpdateEnsurer = {
-        enable = true -- Automatically restarts fiveguard when an update is installed avoid exposing your server without anticheat, remember that this can crash server/players since restarting resources runtime is not reccomended (manually or by scripts or wathever).
+        enable = true, -- Automatically apply an update when is installed avoid exposing your server without anticheat, remember that this can crash server/players since restarting resources runtime is not recommended (manually or by scripts or wathever).
+        restart = 'script' -- chose 'script' or 'server' to apply the update.
+    },
+    discordBot = {
+        --[[ To get a token and the bot to join your server, follow these two guides:
+        Setting up a bot -> https://discordjs.guide/legacy/preparations/app-setup
+        Adding your bot to servers -> https://discordjs.guide/legacy/preparations/adding-your-app
+        For syncRoles    enable (Server Members Intent)  in the Bot section of your app in the Developer Portal
+        For logsToPunish enable (Message Content intent) in the Bot section of your app in the Developer Portal
+        ]]
+        botToken = '', 
+        guildId = 'auto',  -- Auto is not compatible with multi guilds bot
+        commands = false,  -- Register /fgb slash commands in your discord server
+        syncRoles = false, -- Role syncing isntead of onJoining check only
+        logsToPunish = {
+            enable = false, -- Punish a log only fiveguard option (remember that log only option can cause false detections and for that reason are log only, use at your risk)
+            options = {
+                ['Client.AntiAimbot'] = {   -- Option to watch available in Additional Info in the Log embed
+                    channelId = '',         -- Copy the channel ID where the logs are posted
+                    punishment = 'ban',     -- Required: ban or kick; missing/invalid disables this option.
+                    threshold = 1,          -- Number of logs required to trigger the punishment
+                    windowSeconds = 600     -- Time after the log count resets
+                },
+                ['Client.AntiGodmode'] = {  -- Option to watch available in Additional Info in the Log embed
+                    channelId = '',         -- Copy the channel ID where the logs are posted
+                    punishment = 'ban',     -- Required: ban or kick; missing/invalid disables this option.
+                    threshold = 2,          -- Number of logs required to trigger the punishment
+                    windowSeconds = 600     -- Time after the log count resets
+                }
+            }
+        }
     },
     heartbeat = {
         enable = true,      -- prevent cheaters to stop client side of this resource
@@ -57,13 +87,13 @@ return {
     weaponProtection = {
         enable = true,
         inventorySync = true, -- Disarm held weapons missing from the synced inventory.
-        AntiGiveWeapon = { -- Credit: @locutor404 & @somis12
+        antiGiveWeapon = { -- Credit: @locutor404 & @somis12
             enable = true,
-            relaxed = true,    -- determinate if check every shot or no
+            relaxed = true,     -- determine if check every shot or no
             punishment = 'ban', -- ban/kick/log
             banMedia = 'image'  -- image/video/false
         },
-        AntiDistanceDamage = {
+        antiDistanceDamage = {
             punishment = 'ban', -- ban/kick/log
             banMedia = 'image',
             punch = {
@@ -258,7 +288,7 @@ return {
                 --TriggerServerEvent('fg:addon:SetTempPermission:BypassInvisible', true --[[ or false ]], GetCurrentResourceName())
             SetEntityVisible = true,
             -- It enable:
-                -- exports['addon']:SafeSetEntityVisible(playerId, true --[[ or false ]], GetCurrentResourceName())
+                -- exports['addon']:SetVehicleFixed(playerId, true --[[ or false ]], GetCurrentResourceName())
                 -- TriggerServerEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', true --[[ or false ]], GetCurrentResourceName())
             SetVehicleFixed = true,
             -- It enable:
@@ -268,16 +298,9 @@ return {
         }
     },
     easyPermissions = {
-        enable = true, --  Do not use multple permission system at same time! On conflicts txAdmin will be used.
-        DiscordPermissions = { -- On joining discord permission system
+        enable = true, --  Do not use multiple permission system at same time! On conflicts framework will be used.
+        discordPermissions = { -- Command & fiveguard permissions.
             enable = false,
-            --[[ To get a token and the bot to join your server, follow these two guides:
-            Setting up a bot -> https://discordjs.guide/legacy/preparations/app-setup and
-            Adding your bot to servers -> https://discordjs.guide/legacy/preparations/adding-your-app
-            NOTE: The bot doesn't need any permission to work
-            ]]
-            botToken = '', -- Create your App -> https://discord.com/developers/applications
-            guildId = 'auto', -- Auto requires exactly one guild; otherwise specify its ID as a string.
             users = { -- Users take precedence over roles.
                 -- ['192000425828810752'] = { 'AdminMenuAccess', 'AnnouncementAccess', 'VisualsAccess', 'EntityCleanupAccess', 'PlayerModerationAccess', 'PlayerTeleportAccess', 'VehicleAccess', 'SelfAccess', 'QuickTeleportAccess', 'WorldAccess', 'WeaponAccess', 'PlayersAccess', 'PlayerManagementAccess', 'SpectateAccess', 'ScreenshotAccess', 'MonitorAccess', 'OfflinePlayersAccess', 'FreecamAccess', 'LogsAccess', 'PlayerSelectorAccess', 'BanListAccess', 'PedModelsAccess', 'BypassSpectate', 'BypassGodMode', 'BypassInvisible', 'BypassStealOutfit', 'BypassInfStamina', 'BypassNoclip', 'BypassSuperJump', 'BypassFreecam', 'BypassSpeedHack', 'BypassTeleport', 'BypassNightVision', 'BypassThermalVision', 'BypassExplosiveAmmo', 'BypassOCR', 'BypassNuiDevtools', 'BypassBlacklistedTextures', 'BlipsBypass', 'BypassCbScanner', 'BypassSpoofedBulletShot', 'BypassWeaponDmgModifier', 'BypassInfAmmo', 'BypassNoReload', 'BypassRapidFire', 'BypassVehicleFixAndGodMode', 'BypassVehicleHandlingEdit', 'BypassVehicleModifier', 'BypassBulletproofTires', 'BypassVehiclePlateChanger', 'BypassModelChanger', 'BypassWeaponBlacklist', 'FGCommands', 'BypassVPN', 'BypassExplosion', 'BypassClearTasks', 'BypassParticle', 'BypassSpoofedWeapons' },
                 -- ['234567890123456789'] = { 'SpectateAccess' },
@@ -356,8 +379,8 @@ return {
                 'BypassSpoofedWeapons',
             }
         },
-        FrameworkPermissions = {
-            enable = true, -- Use framework permission to determinate when add or remove fg perms
+        frameworkPermissions = {
+            enable = true, -- Use framework permission to determine when add or remove fg perms
             customFramework = {
                 enable = false, -- enable this only if u have a custom settings and u know what u are doing
                 customEvent = '', -- name of the events that's triggered when a player get/lose a group
@@ -566,7 +589,7 @@ return {
                 }
             }
         },
-        AcePermissions = {  -- Use ACE Permissions from FiveM natives
+        acePermissions = {  -- Use ACE Permissions from FiveM natives
             enable = false,
             groups = {      -- define wich perms you want to add for a specific group u granted to your admins
                 ['admin'] = {
