@@ -235,7 +235,7 @@ game 'gta5'
 
 author 'Community of fiveguard.net'
 description 'Addon pack for fiveguard'
-version '1.6.2'
+version '1.6.3'
 lua54 'yes'
 addon 'yes'
 
