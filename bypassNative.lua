@@ -72,13 +72,13 @@ if IsDuplicityVersion() then
             snooze[source] = (snooze[source] or 0) + 1
             local a_snooze = snooze[source]
             local ok = pcall(function()
-                return exports[Addon]:SafeSetSetPedComponentVariation(source, true, resourceName)
+                return exports[Addon]:SafeSetPedComponentVariation(source, true, resourceName)
             end)
             if not ok then print('[^3WARN^0] easyBypass is disabled^0') end
             Citizen.SetTimeout(2000, function()
                 if snooze[source] == a_snooze then
                     local ok = pcall(function()
-                        return exports[Addon]:SafeSetSetPedComponentVariation(source, false, resourceName)
+                        return exports[Addon]:SafeSetPedComponentVariation(source, false, resourceName)
                     end)
                     if not ok then print('[^3WARN^0] easyBypass is disabled^0') end
                     snooze[source] = nil

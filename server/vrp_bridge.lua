@@ -62,7 +62,7 @@ if resourceName == CurrentResourceName then
             local hook = '@' .. resourceName .. '/server/vrp_bridge.lua'
             if manifest and not manifest:find(hook, 1, true) then
                 local ok, saved = pcall(function()
-                    local backup = path .. '.addon-vrp-weapons.bak'
+                    local backup = path .. '.bak'
                     if not LoadResourceFile('vrp', backup) then
                         assert(SaveResourceFile('vrp', backup, manifest, -1), 'Cannot back up vRP manifest')
                     end
@@ -96,7 +96,7 @@ if resourceName == CurrentResourceName then
                 result, retiring = authorized, grace == true
             end
         end)
-    if amount ~= nil and not retiring then return false end
+        if amount ~= nil and not retiring then return false end
         return result
     end
 

@@ -84,10 +84,10 @@ local setTempPermission = function(src, bypasses, state, eventName)
         result, errorText = exports[Fiveguard]:SetTempPermission(src, category, bypass, state)
         if not result then
             if Config.verbose then
-                Warn(('[SetTempPermission] Can\'t %s temporany permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(state and 'give' or 'remove', category, bypass, src, GetPlayerName(src), errorText))
+                Warn(('[SetTempPermission] Can\'t %s temporary permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(state and 'give' or 'remove', category, bypass, src, GetPlayerName(src), errorText))
             end
         else
-            Debug(('[SetTempPermission] temporany Permission ^5\'%s.%s\'^0 was %s succesfully!\nPlayer changed: ^5[%s] %s^0'):format(category, bypass, state == true and '^2granted^0' or '^1removed^0', src, GetPlayerName(src)))
+            Debug(('[SetTempPermission] temporary Permission ^5\'%s.%s\'^0 was %s successfully!\nPlayer changed: ^5[%s] %s^0'):format(category, bypass, state == true and '^2granted^0' or '^1removed^0', src, GetPlayerName(src)))
         end
         ::continue::
     end
@@ -104,10 +104,10 @@ local SafeSetEntityCoords = function(source, bol, resName)
         local result, errorText = exports[Fiveguard]:SetTempPermission(source, B_CATEGORY['BypassTeleport'], 'BypassTeleport', bol, false)
         if not result then
             if Config.verbose then
-                Warn(('The resource ^5%s^0 can\'t give temporany permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,'Client','BypassTeleport',source,GetPlayerName(tostring(source)),errorText))
+                Warn(('The resource ^5%s^0 can\'t give temporary permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,'Client','BypassTeleport',source,GetPlayerName(tostring(source)),errorText))
             end
         else
-            Debug(('Temporany Permission ^5\'%s.%s\'^0 was %s succesfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format(B_CATEGORY['BypassTeleport'],'BypassTeleport',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
+            Debug(('Temporary Permission ^5\'%s.%s\'^0 was %s successfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format(B_CATEGORY['BypassTeleport'],'BypassTeleport',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
         end
     else
         Warn('Can\'t give/remove BypassTeleport since the option is disabled ')
@@ -125,10 +125,10 @@ local SafeSetEntityVisible = function(source, bol, resName)
         local result, errorText = exports[Fiveguard]:SetTempPermission(source, B_CATEGORY['BypassInvisible'], 'BypassInvisible', bol, false)
         if not result then
             if Config.verbose then
-                Warn(('The resource ^5%s^0  can\'t give temporany permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,'Client','BypassInvisible',source,GetPlayerName(tostring(source)),errorText))
+                Warn(('The resource ^5%s^0  can\'t give temporary permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,'Client','BypassInvisible',source,GetPlayerName(tostring(source)),errorText))
             end
         else
-            Debug(('Temporany Permission ^5\'%s.%s\'^0 was %s succesfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format('Client','BypassInvisible',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
+            Debug(('Temporary Permission ^5\'%s.%s\'^0 was %s successfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format('Client','BypassInvisible',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
         end
     else
         Warn('can\'t give/remove BypassInvisible since the option is disabled ')
@@ -139,17 +139,17 @@ end
 ---@param bol boolean
 ---@param resName string
 ---@return nil
-local SafeSetSetPedComponentVariation = function(source, bol, resName)
+local SafeSetPedComponentVariation = function(source, bol, resName)
     if resName == CurrentResourceName then return end
     if not Resources[resName] then return Warn(('[^5%s^0] ^5%s^0 tried to get a BypassStealOutfit using the resource: %s'):format(source,GetPlayerName(source),resName)) end
     if Config.wrapNatives.SetPedComponentVariation then
         local result, errorText = exports[Fiveguard]:SetTempPermission(source, B_CATEGORY['BypassStealOutfit'], 'BypassStealOutfit', bol, false)
         if not result then
             if Config.verbose then
-                Warn(('The resource ^5%s^0 can\'t give temporany permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,'Client','BypassStealOutfit',source,GetPlayerName(tostring(source)),errorText))
+                Warn(('The resource ^5%s^0 can\'t give temporary permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,'Client','BypassStealOutfit',source,GetPlayerName(tostring(source)),errorText))
             end
         else
-            Debug(('Temporany Permission ^5\'%s.%s\'^0 was %s succesfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format(B_CATEGORY['BypassStealOutfit'],'BypassStealOutfit',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
+            Debug(('Temporary Permission ^5\'%s.%s\'^0 was %s successfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format(B_CATEGORY['BypassStealOutfit'],'BypassStealOutfit',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
         end
     else
         Warn('Can\'t give/remove BypassStealOutfit since the option is disabled ')
@@ -163,10 +163,10 @@ RegisterNetEvent('fg:addon:SetTempPermission:BypassVehicleFixAndGodMode', functi
         local result, errorText = exports[Fiveguard]:SetTempPermission(source, B_CATEGORY['BypassVehicleFixAndGodMode'], 'BypassVehicleFixAndGodMode', bol, false)
         if not result then
             if Config.verbose then
-                Warn(('The resource ^5%s^0 can\'t give temporany permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,B_CATEGORY['BypassVehicleFixAndGodMode'],'BypassVehicleFixAndGodMode',source,GetPlayerName(tostring(source)),errorText))
+                Warn(('The resource ^5%s^0 can\'t give temporary permission!\nPermission: ^5\'%s.%s\'^0\nPlayer: ^5[%s] %s^0\nReason: ^5%s^0'):format(resName,B_CATEGORY['BypassVehicleFixAndGodMode'],'BypassVehicleFixAndGodMode',source,GetPlayerName(tostring(source)),errorText))
             end
         else
-            Debug(('Temporany Permission ^5\'%s.%s\'^0 was %s succesfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format(B_CATEGORY['BypassVehicleFixAndGodMode'],'BypassVehicleFixAndGodMode',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
+            Debug(('Temporary Permission ^5\'%s.%s\'^0 was %s successfully by ^5\'%s\'^0!\nPlayer changed: ^5[%s] %s^0'):format(B_CATEGORY['BypassVehicleFixAndGodMode'],'BypassVehicleFixAndGodMode',bol == true and'^2granted^0' or '^1removed^0',resName,source,GetPlayerName(tostring(source))))
         end
     else
         Warn('can\'t give/remove BypassVehicleFixAndGodMode since the option is disabled ')
@@ -180,7 +180,7 @@ RegisterNetEvent('fg:addon:SetTempPermission:BypassInvisible', function (bol, re
     return SafeSetEntityVisible(source, bol, resName)
 end)
 RegisterNetEvent('fg:addon:SetTempPermission:BypassStealOutfit', function (bol, resName)
-    return SafeSetSetPedComponentVariation(source, bol, resName)
+    return SafeSetPedComponentVariation(source, bol, resName)
 end)
 
 exports('SafeSetEntityCoords', function (source, bol, resName)
@@ -189,8 +189,8 @@ end)
 exports('SafeSetEntityVisible', function (source, bol, resName)
     return SafeSetEntityVisible(source, bol, resName)
 end)
-exports('SafeSetSetPedComponentVariation', function (source, bol, resName)
-    return SafeSetSetPedComponentVariation(source, bol, resName)
+exports('SafeSetPedComponentVariation', function (source, bol, resName)
+    return SafeSetPedComponentVariation(source, bol, resName)
 end)
 
 do

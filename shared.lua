@@ -14,7 +14,7 @@ if isServer then
     Config = assert(load(data))()
 
     local clientConfig = {
-        Debug = Config.Debug,
+        debug = Config.debug,
         heartbeat = { enable = Config.heartbeat.enable },
         antiFiveguardStopper = {
             enable = Config.antiFiveguardStopper.enable,
@@ -53,7 +53,7 @@ if isServer then
     AddEventHandler('playerDropped', function()
         lastRequest[source] = nil
     end)
-    if Config.Debug then
+    if Config.debug then
         RegisterNetEvent('fg:addon:debug', function(...)
             print('[^5DEBUG-CLIENT-'..source..'^0]', ...)
         end)
@@ -71,7 +71,7 @@ end
 
 ---@param ... any
 function Debug(...)
-    if not GetConfig().Debug then return end
+    if not GetConfig().debug then return end
     if isServer then
         print('[^5DEBUG-SERVER^0]', ...)
     else
@@ -81,15 +81,15 @@ function Debug(...)
 end
 ---@param ... any
 function Error(...)
-    print('[^1ERROR^0]^1',...,'^0')
+    print('[^1ERROR^0]^1', ..., '^0')
 end
 ---@param ... any
 function Warn(...)
-    print('[^3WARN^0]', ...,'^0')
+    print('[^3WARN^0]', ..., '^0')
 end
 ---@param ... any
 function Info(...)
-    print('[^2INFO^0]', ...,'^0')
+    print('[^2INFO^0]', ..., '^0')
 end
 
 local pros = promise.new()

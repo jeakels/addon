@@ -27,7 +27,7 @@ local function CheckWeaponDistance(sender, ev, expectedHash, maxDist, reason)
                 local victimCoords = GetEntityCoords(victimEnt)
                 if #(attackerCoords - victimCoords) > maxDist then
                     CancelEvent()
-                    PunishPlayer(sender, Config.AntiDistanceDamage.punishment, reason, Config.AntiDistanceDamage.banMedia)
+                    PunishPlayer(sender, Config.antiDistanceDamage.punishment, reason, Config.antiDistanceDamage.banMedia)
                 end
             end
         end
@@ -35,19 +35,20 @@ local function CheckWeaponDistance(sender, ev, expectedHash, maxDist, reason)
 end
 
 
-if Config.AntiDistanceDamage.punch.enable then
+if Config.antiDistanceDamage.punch.enable then
     AddEventHandler('weaponDamageEvent', function(sender, ev)
-        CheckWeaponDistance(sender, ev, 2725352035, Config.AntiDistanceDamage.punch.maxDistance, 'Punch Distance Exceeded (1)')
+        CheckWeaponDistance(sender, ev, 2725352035, Config.antiDistanceDamage.punch.maxDistance, 'Punch Distance Exceeded (1)')
     end)
 end
-if Config.AntiDistanceDamage.stungun.enable then
+if Config.antiDistanceDamage.stungun.enable then
     AddEventHandler('weaponDamageEvent', function(sender, ev)
-        CheckWeaponDistance(sender, ev, 3452007600, Config.AntiDistanceDamage.stungun.maxDistance, 'StunGun Distance Exceeded')
+        CheckWeaponDistance(sender, ev, 3452007600, Config.antiDistanceDamage.stungun.maxDistance, 'StunGun Distance Exceeded')
     end)
 end
 local initializationError
+local details
 local requiresInitialWeapons = false
-if Config.AntiGiveWeapon.enable then
+if Config.antiGiveWeapon.enable then
     local frameworkDetected,HasWeapon
 
     local checkResource = function (res)
@@ -66,8 +67,8 @@ if Config.AntiGiveWeapon.enable then
                 local item = xPlayer.hasItem(weaponName)
                 return item ~= nil and item ~= false and (tonumber(item.count) or 0) > 0
             end)
-        if not ok then Error('Failed to check weapon through ESX!', result) return nil end
-        return result
+            if not ok then Error('Failed to check weapon through ESX!', result) return nil end
+            return result
         end
     elseif not frameworkDetected and checkResource('qbx_core') then
         frameworkDetected = 'QBox'
@@ -91,7 +92,7 @@ if Config.AntiGiveWeapon.enable then
             end)
             if not ok then
                 Warn('Couldn\'t get items from PlayerData, retrying with qb-inventory instead...')
-                if not checkResource('qb-inventory') then Warn('Couldn\'t find qb-inventory to check weapon on QBox') return end
+                if not checkResource('qb-inventory') then Warn('Couldn\'t find qb-inventory to check weapon on QBCore') return end
                 hasItem = exports['qb-inventory']:GetItemCount(source, weaponName) >= 1
             end
             return hasItem
@@ -99,7 +100,7 @@ if Config.AntiGiveWeapon.enable then
     elseif not frameworkDetected and checkResource('vrp') then
         local vrp, err = GetVRPBridge()
         frameworkDetected = vrp and vrp.version or 'vRP / unavailable'
-        if not vrp then initializationError = err or 'vRP bridge unavailable; AntiGiveWeapon is not operational' end
+        if not vrp then initializationError = err or 'vRP bridge unavailable; antiGiveWeapon is not operational' end
         if vrp and not vrp:EnableWeaponTracking() then
             initializationError = 'vRP equipped weapon tracking unavailable; inventory checks remain active'
         end
@@ -125,7 +126,7 @@ if Config.AntiGiveWeapon.enable then
         end)
         RegisterNetEvent('fg:addon:registerInitialWeapons', function(initialWeapons)
             if isRegistered[source] then
-                PunishPlayer(source, Config.AntiGiveWeapon.punishment, 'Tried to re-register his weapons', Config.AntiGiveWeapon.banMedia)
+                PunishPlayer(source, Config.antiGiveWeapon.punishment, 'Tried to re-register his weapons', Config.antiGiveWeapon.banMedia)
                 return
              end
             if not PlayerWeapons[source] then PlayerWeapons[source] = {} end
@@ -159,13 +160,13 @@ if Config.AntiGiveWeapon.enable then
             return false
         end
     end
-    if frameworkDetected then Info(('[Weapon Protection] Connected successfully with: ^3%s^0'):format(frameworkDetected)) end
+    details = frameworkDetected == 'QBox' and 'QBox | ox_inventory' or frameworkDetected or 'standalone'
     AddEventHandler('weaponDamageEvent', function(sender, ev)
         local sender = tonumber(sender)
         if not sender then return end
         local weaponName = weaponHash[ev.weaponType & 0xFFFFFFFF]
         if not weaponName or (weaponName and weaponName == 'WEAPON_UNARMED') or ev.damageType ~= 3 then return end
-        if Config.AntiGiveWeapon.relaxed then
+        if Config.antiGiveWeapon.relaxed then
             local now = GetGameTimer()
             if coolDown[sender] and now < coolDown[sender] then return end
             coolDown[sender] = now + 3000
@@ -173,18 +174,18 @@ if Config.AntiGiveWeapon.enable then
         local hasWeapon = HasWeapon(sender, weaponName)
         if hasWeapon == false then
             CancelEvent()
-            if Config.AntiGiveWeapon.punishment then
-                PunishPlayer(sender, Config.AntiGiveWeapon.punishment, ('Give Weapon Detected (Shot with: %s)'):format(weaponName), Config.AntiGiveWeapon.banMedia)
+            if Config.antiGiveWeapon.punishment then
+                PunishPlayer(sender, Config.antiGiveWeapon.punishment, ('Give Weapon Detected (Shot with: %s)'):format(weaponName), Config.antiGiveWeapon.banMedia)
             else
                 local playerPedId = GetPlayerPed(sender)
                 RemoveWeaponFromPed(playerPedId, ev.weaponType)
             end
         end
-        Debug(('AntiGiveWeapon: [^5%s^0] ^5%s^0 shot with %s that\'s %s'):format(sender or 0, GetPlayerName(sender) or 'unknown', weaponName, (hasWeapon == true and '^2present^0' or hasWeapon == false and '^1missing^0' or hasWeapon == nil and 'unavailable^0')..' in inventory'))
+        Debug(('antiGiveWeapon: [^5%s^0] ^5%s^0 shot with %s that\'s %s'):format(sender or 0, GetPlayerName(sender) or 'unknown', weaponName, (hasWeapon == true and '^2present^0' or hasWeapon == false and '^1missing^0' or hasWeapon == nil and 'unavailable^0')..' in inventory'))
     end)
 end
 
-if Config.AntiGiveWeapon.relaxed then
+if Config.antiGiveWeapon.relaxed then
     AddEventHandler('playerDropped', function ()
         if coolDown[source] then
             coolDown[source] = nil
@@ -205,5 +206,5 @@ AddEventHandler('playerDropped', function()
     lastInitialWeaponsRequest[source] = nil
 end)
 
-if initializationError then return false, initializationError end
-return true
+if initializationError then return false, initializationError, details end
+return true, nil, details
