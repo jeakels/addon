@@ -1,22 +1,23 @@
-local enabledModes = (Config.DiscordPermissions.enable and 1 or 0)
-    + (Config.AcePermissions.enable and 1 or 0)
-    + (Config.FrameworkPermissions.enable and 1 or 0)
+local details
+local enabledModes = (Config.discordPermissions.enable and 1 or 0)
+    + (Config.acePermissions.enable and 1 or 0)
+    + (Config.frameworkPermissions.enable and 1 or 0)
     + (Config.txAdminPermissions.enable and 1 or 0)
 if enabledModes > 0 then
     local PermsTable = {}
     if enabledModes > 1 then
-        Config.DiscordPermissions.enable = false
-        Config.AcePermissions.enable = false
-        Config.FrameworkPermissions.enable = true
+        Config.discordPermissions.enable = false
+        Config.acePermissions.enable = false
+        Config.frameworkPermissions.enable = true
         Config.txAdminPermissions.enable = false
-        Warn('Do not use multple permission system at same time!^0\nPermissions configored to use txAdmin')
+        Warn('Only one permission system can be enabled at a time. Using framework permissions')
     end
     ---@param source number|string
     ---@param group string
     ---@param enable boolean
     function SetPermission(source, group, enable)
         Debug('[SetPermission]', source, group, enable, PermsTable[source]?.group)
-        if not group or type(group) ~= 'string' then return Error('Group not valid or not exist') end
+        if not group or type(group) ~= 'string' then return Error('Missing or invalid permission group') end
         if group == 'user' then return Debug(('Ignored player: [^5%s^0] ^5%s^0 since he\'s: ^5%s^0'):format(source, GetPlayerName(source), group)) end
         if source ~= 0 then
             if enable then
@@ -27,9 +28,9 @@ if enabledModes > 0 then
                     ExecuteCommand(('add_principal player.%s fg.%s'):format(source, group))
                     PermsTable[source] = { group = group }
                     exports[Fiveguard]:RefreshPlayerPermissions(source)
-                    return Info(('Permissions for player: [^5%s^0] ^5%s^0 was registered with the group ^5%s^0, overriding permissions to ^5%s^0'):format(source, GetPlayerName(source), oldGroup, group))
+                    return Info(('Permissions updated for player: [^5%s^0] ^5%s^0 Group: ^5%s^0 → ^5%s^0'):format(source, GetPlayerName(source), oldGroup, group))
                 elseif PermsTable[source] and PermsTable[source]?.group == group then
-                    return Warn(('Player: [^5%s^0] ^5%s^0 already have ^5%s^0 group permissions, ignored'):format(source, GetPlayerName(source), group))
+                    return Warn(('Player: [^5%s^0] ^5%s^0 already has group ^5%s^0; permission grant ignored'):format(source, GetPlayerName(source), group))
                 else
                     ExecuteCommand(('add_principal player.%s fg.%s'):format(source, group))
                     PermsTable[source] = { group = group }
@@ -58,10 +59,11 @@ if enabledModes > 0 then
         end
     end)
 else
-    return false, 'No permission system selected'
+    return false, 'No permission system selected. Enable one system or disable easyPermissions to stop this warning', details
 end
 
-if Config.DiscordPermissions.enable then
+if Config.discordPermissions.enable then
+    details = 'Discord'
     local function snowflake(value)
         return type(value) == 'string' and #value <= 20 and value:match('^%d+$') ~= nil
     end
@@ -74,11 +76,11 @@ if Config.DiscordPermissions.enable then
         end
         return count == #value
     end
-    local automatic = Config.DiscordPermissions.guildId == nil or Config.DiscordPermissions.guildId == '' or Config.DiscordPermissions.guildId == 'auto'
-    local roleSettings = Config.DiscordPermissions.roles == nil and {} or Config.DiscordPermissions.roles
-    local userSettings = Config.DiscordPermissions.users == nil and {} or Config.DiscordPermissions.users
+    local automatic = GetConfig().discordBot.guildId == nil or GetConfig().discordBot.guildId == '' or GetConfig().discordBot.guildId == 'auto'
+    local roleSettings = Config.discordPermissions.roles == nil and {} or Config.discordPermissions.roles
+    local userSettings = Config.discordPermissions.users == nil and {} or Config.discordPermissions.users
     if type(roleSettings) ~= 'table' or type(userSettings) ~= 'table' then
-        return false, 'Discord permissions: roles and users must be tables'
+        return false, 'Roles and users must be tables', details
     end
     local function validPermissions(permissions)
         if not array(permissions) then return false end
@@ -90,13 +92,13 @@ if Config.DiscordPermissions.enable then
         return true
     end
     local roles, users, grants = {}, {}, {}
-    if not array(roleSettings) then return false, 'Discord permissions: roles must be a dense ordered array of single-ID tables' end
+    if not array(roleSettings) then return false, 'Roles must be a dense ordered array of single-ID tables', details end
     local seenRoles = {}
     for _, entry in ipairs(roleSettings) do
-        if type(entry) ~= 'table' then return false, 'Discord permissions: each role entry must contain exactly one ID' end
+        if type(entry) ~= 'table' then return false, 'Each role entry must contain exactly one ID', details end
         local id, permissions = next(entry)
         if not snowflake(id) or next(entry, id) ~= nil or seenRoles[id] or not validPermissions(permissions) then
-            return false, 'Discord permissions: each role entry requires one unique ID mapped to a valid permissions array'
+            return false, 'Each role entry requires one unique ID mapped to a valid permissions array', details
         end
         seenRoles[id] = true
         local role = { id = id, group = 'discord_role_' .. id, permissions = permissions }
@@ -105,25 +107,25 @@ if Config.DiscordPermissions.enable then
     end
     for id, permissions in pairs(userSettings) do
         if not snowflake(id) or not validPermissions(permissions) then
-            return false, 'Discord permissions: each user ID must map to a valid permissions array'
+            return false, 'Each user ID must map to a valid permissions array', details
         end
         local user = { group = 'discord_user_' .. id, permissions = permissions }
         users[id] = user
         grants[#grants + 1] = user
     end
-    if #grants == 0 then return false, 'Discord permissions: configure at least one role or user' end
+    if #grants == 0 then return false, 'Configure at least one role or user to use discord permission or disable it to stop this warning', details end
     local initializationError
     local token
     if #roles > 0 then
-        if type(Config.DiscordPermissions.botToken) == 'string' then
-            token = Config.DiscordPermissions.botToken:match('^%s*(.-)%s*$'):gsub('^Bot%s+', '')
+        if type(GetConfig().discordBot.botToken) == 'string' then
+            token = GetConfig().discordBot.botToken:match('^%s*(.-)%s*$'):gsub('^Bot%s+', '')
         end
-        if (not automatic and not snowflake(Config.DiscordPermissions.guildId)) or not token
+        if (not automatic and not snowflake(GetConfig().discordBot.guildId)) or not token
             or token == '' or token:find('[%s%c]') then
-            initializationError = 'Discord permissions: configure a valid botToken and guildId; role permissions disabled'
+            initializationError = 'Configure a valid botToken and guildId; role permissions disabled'
             roles, grants = {}, {}
             for _, user in pairs(users) do grants[#grants + 1] = user end
-            if #grants == 0 then return false, initializationError end
+            if #grants == 0 then return false, initializationError, details end
         end
     end
 
@@ -189,11 +191,11 @@ if Config.DiscordPermissions.enable then
             if status == 429 and (job.retries or 0) < 2 then
                 job.retries = (job.retries or 0) + 1
                 table.insert(queue, 1, job)
-                Warn('Discord permissions: rate limit reached; retrying after the requested delay')
+                Warn('Rate limit reached; retrying after the requested delay')
             elseif not state or (sessions[state.src] == state and GetPlayerName(state.src)
                 and GetPlayerIdentifierByType(state.src, 'discord') == 'discord:' .. state.id) then
                 if not pcall(job.callback, status, response) then
-                    Warn('Discord permissions: could not apply response; check permission integration')
+                    Warn('Could not apply response; check permission integration')
                 end
             end
             processQueue()
@@ -202,14 +204,14 @@ if Config.DiscordPermissions.enable then
         local path = state and ('/guilds/' .. guildId .. '/members/' .. state.id) or job.path
         local ok = pcall(PerformHttpRequest, 'https://discord.com/api/v10' .. path, finish, 'GET', '', {
             Authorization = 'Bot ' .. token,
-            ['User-Agent'] = 'FiveguardAddon (https://github.com/jeakels/addon, 1.6.2)'
+            ['User-Agent'] = 'FiveguardAddon (https://github.com/jeakels/addon)'
         }, { followLocation = false })
         if not ok then finish(0) end
     end
 
     if #roles > 0 then
         queue[1] = {
-            path = automatic and '/users/@me/guilds?limit=2' or '/guilds/' .. Config.DiscordPermissions.guildId,
+            path = automatic and '/users/@me/guilds?limit=2' or '/guilds/' .. GetConfig().discordBot.guildId,
             callback = function(status, response)
                 if guildCompleted then return end
                 guildCompleted = true
@@ -221,7 +223,7 @@ if Config.DiscordPermissions.enable then
                         return guildInitialization:resolve({ ok = false, reason = 'Auto requires exactly one guild; configure guildId. Users remain available' })
                     end
                     guildId = response[1].id
-                elseif response.id == Config.DiscordPermissions.guildId then
+                elseif response.id == GetConfig().discordBot.guildId then
                     guildId = response.id
                 else
                     return guildInitialization:resolve({ ok = false, reason = 'Invalid response for configured guildId; users remain available' })
@@ -231,45 +233,87 @@ if Config.DiscordPermissions.enable then
         }
     end
 
-    local function onJoin(src)
+    local function applyMemberRoles(state, memberRoles)
+        if sessions[state.src] ~= state or GetPlayerIdentifierByType(state.src, 'discord') ~= 'discord:' .. state.id then return end
+        local group = users[state.id] and users[state.id].group
+        if not group then
+            for _, role in ipairs(roles) do
+                if memberRoles[role.id] then group = role.group break end
+            end
+        end
+        if state.group == group then return end
+        if state.group then SetPermission(state.src, state.group, false) end
+        state.group = group
+        if group then SetPermission(state.src, group, true) end
+    end
+    local function onJoin(src, refresh)
         src = tonumber(src)
-        if not src or not GetPlayerName(src) or sessions[src] then return end
+        if not src or not GetPlayerName(src) or (sessions[src] and not refresh) then return end
         local identifier = GetPlayerIdentifierByType(src, 'discord')
         local id = identifier and identifier:match('^discord:(%d+)$')
-        local state = { src = src, id = id }
+        local state = sessions[src] or { src = src, id = id }
         sessions[src] = state
         if not snowflake(id) then return end
         if users[id] then
             state.group = users[id].group
-            return SetPermission(src, state.group, true)
+            if not refresh then return SetPermission(src, state.group, true) end
+            return
         end
         if #roles == 0 then return end
+        state.revision = (state.revision or 0) + 1
+        local revision = state.revision
+        if GetConfig().discordBot.syncRoles and AddonDiscordBotState and AddonDiscordBotState.ready then
+            TriggerEvent('fg:addon:bot:send', json.encode({ type = 'lookup', userId = id }))
+            return
+        end
         queue[#queue + 1] = {
             state = state,
             callback = function(status, response)
-                if status == 404 then return end
+                if state.revision ~= revision then return end
+                if status == 404 then return applyMemberRoles(state, {}) end
                 if status ~= 200 then
-                    return Warn('Discord permissions: member lookup failed (HTTP ' .. tostring(status) .. ') for player ' .. src)
+                    return Warn('Member lookup failed (HTTP ' .. tostring(status) .. ') for player ' .. src)
                 end
                 if not response or not array(response.roles)
                     or (response.user and (type(response.user) ~= 'table' or response.user.id ~= id)) then
-                    return Warn('Discord permissions: invalid member response for player ' .. src)
+                    return Warn('Invalid member response for player ' .. src)
                 end
                 local memberRoles = { [guildId] = true }
                 for _, roleId in ipairs(response.roles) do
-                    if not snowflake(roleId) then return Warn('Discord permissions: invalid member roles for player ' .. src) end
+                    if not snowflake(roleId) then return Warn('Invalid member roles for player ' .. src) end
                     memberRoles[roleId] = true
                 end
-                for _, role in ipairs(roles) do
-                    if memberRoles[role.id] then
-                        state.group = role.group
-                        return SetPermission(src, role.group, true)
-                    end
-                end
+                applyMemberRoles(state, memberRoles)
             end
         }
         processQueue()
     end
+    local function refreshOnline()
+        for _, src in ipairs(GetPlayers()) do onJoin(src, true) end
+    end
+    AddEventHandler('fg:addon:bot:refreshPermissions', refreshOnline)
+    AddEventHandler('fg:addon:bot:roles', function(payload)
+        local message = json.decode(payload)
+        if not GetConfig().discordBot.syncRoles or not AddonDiscordBotState or not AddonDiscordBotState.ready then return end
+        if not snowflake(message.userId) or type(message.roles) ~= 'table' then return end
+        local held = {}
+        for _, id in ipairs(message.roles) do
+            if not snowflake(id) then return end
+            held[id] = true
+        end
+        for _, state in pairs(sessions) do
+            if state.id == message.userId then
+                state.revision = (state.revision or 0) + 1
+                applyMemberRoles(state, held)
+            end
+        end
+    end)
+    Citizen.CreateThread(function()
+        while running do
+            Citizen.Wait(60000)
+            if running and GetConfig().discordBot.syncRoles and (not AddonDiscordBotState or not AddonDiscordBotState.ready or not AddonDiscordBotState.memberEvents) then refreshOnline() end
+        end
+    end)
     AddEventHandler('playerJoining', function() onJoin(source) end)
     AddEventHandler('playerDropped', function()
         local src = tonumber(source)
@@ -280,7 +324,7 @@ if Config.DiscordPermissions.enable then
         end
         if state and state.group then
             local ok = pcall(SetPermission, src, state.group, false)
-            if not ok then Warn('Discord permissions: could not refresh disconnected player permissions') end
+            if not ok then Warn('Could not refresh disconnected player permissions') end
         end
     end)
     AddEventHandler('onResourceStop', function(resource)
@@ -295,12 +339,12 @@ if Config.DiscordPermissions.enable then
     processQueue()
     if guildInitialization then
         local result = Citizen.Await(guildInitialization)
-        if not result.ok then return false, result.reason end
+        if not result.ok then return false, result.reason, details end
     end
-    if initializationError then return false, initializationError .. '; users remain available' end
-    Info('[Easy Permissions] Connected successfully with: ^3Discord^0')
-elseif Config.AcePermissions.enable then
-    for group, groupConfig in pairs(Config.AcePermissions.groups) do
+    if initializationError then return false, initializationError .. '; users remain available', details end
+elseif Config.acePermissions.enable then
+    details = 'ACE'
+    for group, groupConfig in pairs(Config.acePermissions.groups) do
         local principal = ('group.%s'):format(group)
         local object    = ('has.'..group)
         for i = 1 , #groupConfig do
@@ -317,7 +361,7 @@ elseif Config.AcePermissions.enable then
 
     AddEventHandler('playerJoining', function()
         if tonumber(source) > 65000 then return end
-        for group,_ in pairs(Config.AcePermissions.groups) do
+        for group,_ in pairs(Config.acePermissions.groups) do
             if IsPlayerAceAllowed(source, 'has.'..group) then
                 SetPermission(source, group, true)
                 break
@@ -326,7 +370,7 @@ elseif Config.AcePermissions.enable then
     end)
 
     RegisterNetEvent('fg:addon:playerReady', function()
-        for group, _ in pairs(Config.AcePermissions.groups) do
+        for group, _ in pairs(Config.acePermissions.groups) do
             if IsPlayerAceAllowed(source, 'has.'..group) then
                 SetPermission(source, group, true)
                 break
@@ -335,7 +379,7 @@ elseif Config.AcePermissions.enable then
     end)
 
     AddEventHandler('playerDropped', function()
-        for group,_ in pairs(Config.AcePermissions.groups) do
+        for group,_ in pairs(Config.acePermissions.groups) do
             if IsPlayerAceAllowed(source, 'has.'..group) then
                 SetPermission(source, group, false)
                 break
@@ -345,15 +389,15 @@ elseif Config.AcePermissions.enable then
 
     AddEventHandler('onResourceStop', function(res)
         if CurrentResourceName ~= res then return end
-        for group, groupConfig in pairs(Config.AcePermissions.groups) do
+        for group, groupConfig in pairs(Config.acePermissions.groups) do
             for i = 1 , #groupConfig do
                 ExecuteCommand(('remove_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
         end
     end)
-elseif Config.FrameworkPermissions.enable then
+elseif Config.frameworkPermissions.enable then
     local out = ''
-    for group, groupConfig in pairs(Config.FrameworkPermissions.groups) do
+    for group, groupConfig in pairs(Config.frameworkPermissions.groups) do
         for i = 1 , #groupConfig do
             if IsPrincipalAceAllowed(('fg.%s'):format(group),groupConfig[i]) then
                 out = out..'\n\tIgnored permission \''..groupConfig[i]..'\' for group \''..group..'\'. Already Registered!'
@@ -369,7 +413,7 @@ elseif Config.FrameworkPermissions.enable then
     end
     local frameworkDetected = ''
     local frameworkResource
-    if not Config.FrameworkPermissions.customFramework.enable then
+    if not Config.frameworkPermissions.customFramework.enable then
         if checkResource('es_extended') then
             frameworkDetected = 'ESX'
             local ESX = exports.es_extended:getSharedObject()
@@ -402,21 +446,20 @@ elseif Config.FrameworkPermissions.enable then
         elseif checkResource('qbx_core') then
             frameworkDetected = 'QBox'
             for _, playerId in ipairs(GetPlayers()) do
-            local src = tonumber(playerId)
-
-            if exports.qbx_core:GetPlayer(src) then
-                for group in pairs(Config.FrameworkPermissions.groups) do
-                    if IsPlayerAceAllowed(src, group) then
-                        SetPermission(src, group, true)
-                        break
+                local src = tonumber(playerId)
+                if exports.qbx_core:GetPlayer(src) then
+                    for group in pairs(Config.frameworkPermissions.groups) do
+                        if IsPlayerAceAllowed(src, group) then
+                            SetPermission(src, group, true)
+                            break
+                        end
                     end
                 end
             end
-        end
             AddEventHandler('QBCore:Server:PlayerLoaded', function(Player)
                 Debug('[QBCore:Server:PlayerLoaded]',GetInvokingResource(),Player.PlayerData.source)
                 if GetInvokingResource() ~= 'qbx_core' then return Warn(source,'tried to exploit QBCore:Server:PlayerLoaded') end
-                for group,_ in pairs(Config.FrameworkPermissions.groups) do
+                for group,_ in pairs(Config.frameworkPermissions.groups) do
                     if IsPlayerAceAllowed(Player.PlayerData.source, group) then
                         SetPermission(Player.PlayerData.source, group, true)
                         break
@@ -426,7 +469,7 @@ elseif Config.FrameworkPermissions.enable then
             RegisterNetEvent('QBCore:Server:OnPlayerUnload', function(source)
                 Debug('[QBCore:Server:OnPlayerUnload]',GetInvokingResource(),source)
                 if GetInvokingResource() ~= 'qbx_core' then return Warn(source,'tried to exploit QBCore:Server:OnPlayerUnload') end
-                for group,_ in pairs(Config.FrameworkPermissions.groups) do
+                for group,_ in pairs(Config.frameworkPermissions.groups) do
                     if IsPlayerAceAllowed(source, group) then
                         SetPermission(source, group, false)
                         break
@@ -436,7 +479,7 @@ elseif Config.FrameworkPermissions.enable then
             AddEventHandler('QBCore:Server:OnPermissionUpdate', function(source)
                 Debug('[QBCore:Server:OnPermissionUpdate]',GetInvokingResource(),source)
                 if GetInvokingResource() ~= 'qbx_core' then return Warn(source,'tried to exploit QBCore:Server:OnPermissionUpdate') end
-                for group,_ in pairs(Config.FrameworkPermissions.groups) do
+                for group,_ in pairs(Config.frameworkPermissions.groups) do
                     if IsPlayerAceAllowed(source, group) then
                         SetPermission(source, group, true)
                     else
@@ -447,7 +490,7 @@ elseif Config.FrameworkPermissions.enable then
             AddEventHandler('qbx_core:server:onGroupUpdate', function(source, groupName, groupGrade)
                 Debug('[qbx_core:server:onGroupUpdate]',GetInvokingResource(),source, groupName, groupGrade)
                 if GetInvokingResource() ~= 'qbx_core' then return Warn(source,'tried to exploit qbx_core:server:onGroupUpdate') end
-                for group,_ in pairs(Config.FrameworkPermissions.groups) do
+                for group,_ in pairs(Config.frameworkPermissions.groups) do
                     if IsPlayerAceAllowed(source, group) then
                         SetPermission(source, group, true)
                     elseif not IsPlayerAceAllowed(source, group) then
@@ -461,7 +504,7 @@ elseif Config.FrameworkPermissions.enable then
             for _, playerId in ipairs(GetPlayers()) do
                 local src = tonumber(playerId)
                 if QBCore.Functions.GetPlayer(src) then
-                    for group in pairs(Config.FrameworkPermissions.groups) do
+                    for group in pairs(Config.frameworkPermissions.groups) do
                         if IsPlayerAceAllowed(src, group) then
                             SetPermission(src, group, true)
                             break
@@ -475,7 +518,7 @@ elseif Config.FrameworkPermissions.enable then
             AddEventHandler('QBCore:Server:PlayerLoaded', function(Player)
                 Debug('[QBCore:Server:PlayerLoaded]',GetInvokingResource(),Player.PlayerData.source)
                 if GetInvokingResource() ~= 'qb-core' then return Warn(source,'tried to exploit QBCore:Server:PlayerLoaded') end
-                for group,_ in pairs(Config.FrameworkPermissions.groups) do
+                for group,_ in pairs(Config.frameworkPermissions.groups) do
                     if IsPlayerAceAllowed(Player.PlayerData.source, group) then
                         SetPermission(Player.PlayerData.source, group, true)
                         break
@@ -485,7 +528,7 @@ elseif Config.FrameworkPermissions.enable then
             AddEventHandler('QBCore:Server:OnPlayerUnload', function(source)
                 Debug('[QBCore:Server:OnPlayerUnload]',GetInvokingResource(),source)
                 if GetInvokingResource() ~= 'qb-core' then return Warn(source,'tried to exploit QBCore:Server:OnPlayerUnload') end
-                for group,_ in pairs(Config.FrameworkPermissions.groups) do
+                for group,_ in pairs(Config.frameworkPermissions.groups) do
                     if IsPlayerAceAllowed(source, group) then
                         SetPermission(source, group, false)
                         break
@@ -494,7 +537,7 @@ elseif Config.FrameworkPermissions.enable then
             end)
         elseif checkResource('vrp') then
             local vrp, err = GetVRPBridge()
-            if not vrp then return false, err end
+            if not vrp then return false, err, 'vRP' end
             frameworkDetected = vrp.version
             frameworkResource = vrp.resource
             local assignedGroups = {}
@@ -509,7 +552,7 @@ elseif Config.FrameworkPermissions.enable then
                     local ok, groups = pcall(vrp.GetGroups, vrp, src)
                     if not ok then Error('vRP permission sync: ' .. tostring(groups)) return end
                     if type(groups) ~= 'table' then return end
-                    for group in pairs(Config.FrameworkPermissions.groups) do
+                    for group in pairs(Config.frameworkPermissions.groups) do
                         if group ~= 'user' and groups[group] ~= nil then
                             selectedGroup = group
                             break
@@ -541,19 +584,19 @@ elseif Config.FrameworkPermissions.enable then
             for _, playerId in ipairs(GetPlayers()) do
                 TriggerEvent(vrp.syncEvent, tonumber(playerId))
             end
-        else return false, 'Framework not detected; configure customFramework if needed'
+        else return false, 'Framework not detected; configure customFramework if needed', details
         end
     else
-        if type(Config.FrameworkPermissions.customFramework.customEvent) ~= 'string' or not Config.FrameworkPermissions.customFramework.customEvent:find('%S') then
-            return false, 'Custom framework event missing or invalid'
+        if type(Config.frameworkPermissions.customFramework.customEvent) ~= 'string' or not Config.frameworkPermissions.customFramework.customEvent:find('%S') then
+            return false, 'Custom framework event missing or invalid', 'custom framework'
         end
-        AddEventHandler(tostring(Config.FrameworkPermissions.customFramework.customEvent),function(playerId,group,allow)
+        AddEventHandler(tostring(Config.frameworkPermissions.customFramework.customEvent),function(playerId,group,allow)
             frameworkDetected = GetInvokingResource()
             Debug('[customEvent]', GetInvokingResource())
-            if Config.FrameworkPermissions.customFramework.invokerResource and Config.FrameworkPermissions.customFramework.invokerResource:len() > 4 then
-                if GetInvokingResource() ~= Config.FrameworkPermissions.customFramework.invokerResource then return Warn(source,'tried to exploit '..Config.FrameworkPermissions.customFramework.customEvent) end
+            if Config.frameworkPermissions.customFramework.invokerResource and Config.frameworkPermissions.customFramework.invokerResource:len() > 4 then
+                if GetInvokingResource() ~= Config.frameworkPermissions.customFramework.invokerResource then return Warn(source,'tried to exploit '..Config.frameworkPermissions.customFramework.customEvent) end
             else
-                Warn('Make sure to config \'Config.FrameworkPermissions.customFramework.invokerResource\' for you custom framework, without it the event can be exploitable by cheaters!')
+                Warn('Make sure to config \'Config.frameworkPermissions.customFramework.invokerResource\' for you custom framework, without it the event can be exploitable by cheaters!')
             end
             if not (playerId and group and allow~=nil) then
                 return Warn('[Framework Permission] Bad config for custom framework')
@@ -561,11 +604,11 @@ elseif Config.FrameworkPermissions.enable then
             SetPermission(playerId, group, allow)
         end)
     end
-    Info('[Easy Permissions] Connected successfully with: ^3'..frameworkDetected..'^0')
+    details = frameworkDetected ~= '' and frameworkDetected or 'custom framework'
 
     AddEventHandler('onResourceStop', function(res)
         if (CurrentResourceName ~= res) then return end
-        for group, groupConfig in pairs(Config.FrameworkPermissions.groups) do
+        for group, groupConfig in pairs(Config.frameworkPermissions.groups) do
             for i = 1 , #groupConfig do
                 ExecuteCommand(('remove_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
@@ -576,7 +619,7 @@ elseif Config.FrameworkPermissions.enable then
     end)
     AddEventHandler('onResourceStop', function(res)
         if res ~= (frameworkResource or frameworkDetected) then return end
-        for group, groupConfig in pairs(Config.FrameworkPermissions.groups) do
+        for group, groupConfig in pairs(Config.frameworkPermissions.groups) do
             for i = 1 , #groupConfig do
                 ExecuteCommand(('remove_ace fg.%s %s allow'):format(group, groupConfig[i]))
             end
@@ -586,8 +629,8 @@ elseif Config.FrameworkPermissions.enable then
         end
     end)
 elseif Config.txAdminPermissions.enable then
-    if GetResourceState('monitor') ~= 'started' then return false, 'txAdmin is not started' end
-    Info('Easy Permissions: using txAdmin Permissions')
+    details = 'txAdmin'
+    if GetResourceState('monitor') ~= 'started' then return false, 'txAdmin is not started', details end
     for i = 1, #Config.txAdminPermissions.fgPermissions do
         if IsPrincipalAceAllowed('fg.txadmin', Config.txAdminPermissions.fgPermissions[i]) then
             Warn(('[txAdmin Permissions] Ignored permission %s for group fg.txadmin because is already registered'):format(Config.txAdminPermissions.fgPermissions[i]))
@@ -620,7 +663,6 @@ elseif Config.txAdminPermissions.enable then
             ExecuteCommand(('remove_ace fg.txadmin %s allow'):format(Config.txAdminPermissions.fgPermissions[i]))
         end
     end)
-    Info('[Easy Permissions] Connected successfully with: ^3txAdmin^0')
 end
 
-return true
+return true, nil, details
