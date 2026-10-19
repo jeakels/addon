@@ -171,6 +171,141 @@ function uninstaller(resource, currentResource, defModule) {
 }
 
 function fivemMode() {
+  let botChild = null;
+  let botStopping = false;
+  let botStarting = false;
+  let botRetry = null;
+  let botInstaller = null;
+  let botFailures = 0;
+  const resourceName = GetCurrentResourceName();
+  const botPath = path.join(GetResourcePath(resourceName), 'bot');
+  let botPayload;
+  async function removeDisabledCommands(config) {
+    const token = String(config.botToken || '').trim().replace(/^Bot\s+/, '');
+    if (!token || /\s/.test(token)) return;
+    const https = require('https');
+    async function api(method, route, retries = 0) {
+      const result = await new Promise((resolve, reject) => {
+        const request = https.request({ hostname: 'discord.com', path: '/api/v10' + route, method,
+          headers: { Authorization: 'Bot ' + token, 'User-Agent': 'FiveguardAddon Discord bot' } }, response => {
+          let body = '';
+          response.setEncoding('utf8');
+          response.on('data', chunk => { body += chunk; });
+          response.on('error', reject);
+          response.on('end', () => {
+            try { resolve({ status: response.statusCode, data: body ? JSON.parse(body) : null }); }
+            catch { reject(new Error('Invalid Discord response')); }
+          });
+        });
+        request.setTimeout(15000, () => request.destroy(new Error('Discord request timed out')));
+        request.on('error', reject); request.end();
+      });
+      if (result.status === 429 && retries < 2) {
+        const delay = Math.min(30000, Math.max(1000, Number(result.data?.retry_after || 1) * 1000));
+        await new Promise(resolve => setTimeout(resolve, delay));
+        if (botStopping) throw new Error('Resource stopped');
+        return api(method, route, retries + 1);
+      }
+      if (result.status < 200 || result.status >= 300) throw new Error(`Discord HTTP ${result.status}`);
+      return result.data;
+    }
+    try {
+      let guildId = config.guildId;
+      if (!guildId || guildId === 'auto') {
+        const guilds = await api('GET', '/users/@me/guilds?limit=2');
+        if (!Array.isArray(guilds) || guilds.length !== 1) throw new Error('guildId=auto requires exactly one guild');
+        guildId = guilds[0].id;
+      }
+      if (!/^\d{1,20}$/.test(guildId)) throw new Error('Invalid guildId');
+      const application = await api('GET', '/oauth2/applications/@me');
+      const route = `/applications/${application.id}/guilds/${guildId}/commands`;
+      const commands = await api('GET', route);
+      for (const command of commands) {
+        if (command.name === 'fgb' && !botStopping) {
+          await api('DELETE', `${route}/${command.id}`);
+          botLog('/fgb removed; all bot features are disabled.');
+        }
+      }
+    } catch (error) { botLog(`Could not remove disabled /fgb: ${error.message}`); }
+  }
+  function botLog(data) {
+    let value = String(data).trim();
+    const token = botPayload?.config?.botToken;
+    if (token) value = value.split(token).join('[redacted]');
+    if (value) {
+      if (value.startsWith('[Discord bot]')) console.log(value);
+      else console.log('[Discord bot]', value);
+    }
+  }
+  function runTool(command, args) {
+    return new Promise((resolve, reject) => {
+      const child = spawn(command, args, { cwd: botPath, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+      botInstaller = child;
+      const timeout = setTimeout(() => { child.kill(); reject(new Error('Dependency check/install timed out')); }, 180000);
+      child.stdout.on('data', botLog); child.stderr.on('data', botLog);
+      child.once('error', error => { clearTimeout(timeout); botInstaller = null; reject(error); });
+      child.once('close', code => { clearTimeout(timeout); botInstaller = null; code === 0 ? resolve() : reject(new Error(`Dependency check/install exited with code ${code}`)); });
+    });
+  }
+  async function startBot() {
+    if (botStopping || botStarting || botChild || !botPayload?.run) return;
+    botStarting = true;
+    try {
+      await runTool('node', ['-e', 'if(Number(process.versions.node.split(".")[0])<22 || (Number(process.versions.node.split(".")[0])===22 && Number(process.versions.node.split(".")[1])<12)) process.exit(1)']);
+      try {
+        await runTool('node', ['-e', 'const fs=require("fs"); const p=require("./package.json"); const lock=require("./package-lock.json"); for(const [n,v] of Object.entries(p.dependencies)) { const expected=lock.packages["node_modules/"+n]; if(lock.packages[""].dependencies[n]!==v || !expected) process.exit(1); require(n); if(JSON.parse(fs.readFileSync("./node_modules/"+n+"/package.json","utf8")).version!==expected.version) process.exit(1); }']);
+      } catch {
+        if (botStopping) return;
+        if (process.platform === 'win32') await runTool('cmd.exe', ['/d', '/s', '/c', 'npm ci --omit=dev --ignore-scripts --no-audit --no-fund']);
+        else await runTool('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund']);
+      }
+      if (botStopping) return;
+      const child = spawn('node', [path.join(botPath, 'index.js')], { cwd: botPath, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
+      botChild = child;
+      child.stdout.on('data', botLog); child.stderr.on('data', botLog);
+      child.on('error', error => botLog(error.message));
+      child.on('message', message => {
+        if (botChild !== child || !message || typeof message !== 'object') return;
+        if (message.type === 'request') emit('fg:addon:bot:request', JSON.stringify(message));
+        else if (message.type === 'roles') emit('fg:addon:bot:roles', JSON.stringify(message));
+        else if (message.type === 'ready') { botFailures = 0; emit('fg:addon:bot:ready', JSON.stringify(message)); }
+        else if (message.type === 'unavailable') emit('fg:addon:bot:unavailable');
+      });
+      child.on('close', code => {
+        if (botChild === child) botChild = null;
+        emit('fg:addon:bot:unavailable');
+        if (botStopping) return;
+        if (code === 78) { emit('fg:addon:bot:failed', 'Discord startup failed; see bot errors above.'); return; }
+        if (++botFailures > 5) {
+          botLog('Repeated crashes; automatic restart stopped. Restart addon after fixing the error.');
+          emit('fg:addon:bot:failed', 'Repeated crashes; automatic restart stopped.');
+          return;
+        }
+        botRetry = setTimeout(startBot, Math.min(30000, botFailures * 5000));
+      });
+      child.send({ type: 'init', ...botPayload });
+    } catch (error) {
+      botLog(`Cannot start: ${error.message}. Check Node.js >=22.12, npm and registry connectivity.`);
+      emit('fg:addon:bot:failed', 'Cannot start Discord bot; check Node.js, npm and registry connectivity.');
+    }
+    finally { botStarting = false; }
+  }
+  on('fg:addon:bot:start', payload => {
+    botPayload = JSON.parse(payload);
+    if (botPayload.run) startBot();
+    else removeDisabledCommands(botPayload.config);
+  });
+  on('fg:addon:bot:send', payload => {
+    if (botChild?.connected) botChild.send(JSON.parse(payload));
+  });
+  on('onResourceStop', name => {
+    if (name !== resourceName) return;
+    botStopping = true;
+    clearTimeout(botRetry);
+    botInstaller?.kill();
+    if (botChild?.connected) botChild.disconnect();
+    else botChild?.kill();
+  });
   let FiveguardName = null;
   let imBusy = false;
 
@@ -355,7 +490,7 @@ function fivemMode() {
               let executed = 0;
               for (const banId in bans) {
                 if (Number.isInteger(Number(banId))) {
-                  ExecuteCommand(`fg unban ${banId}`);
+                  exports[FiveguardName].UnbanId(banId);
                   executed++;
                 }
               }
@@ -381,7 +516,7 @@ function fivemMode() {
               for (const key in bans) {
                 const id = Number(key);
                 if (Number.isInteger(id) && id >= min && id <= max) {
-                  ExecuteCommand(`fg unban ${id}`);
+                  exports[FiveguardName].UnbanId(id);
                   executed++;
                 }
               }
